@@ -5,7 +5,6 @@ import {
   loadTasks, saveTasks,
 } from './state/store'
 import { syncReminders } from './state/reminders'
-import { StatusBar } from './components/StatusBar'
 import { BottomNav } from './components/BottomNav'
 import { FAB } from './components/FAB'
 import { ListScreen } from './screens/ListScreen'
@@ -57,7 +56,6 @@ export function App() {
       {/* Task Detail (pushed screen) */}
       {editingTask ? (
         <>
-          <StatusBar />
           <TaskDetail
             task={editingTask}
             onBack={() => dispatch({ type: 'CLOSE_DETAIL' })}
@@ -70,8 +68,6 @@ export function App() {
         </>
       ) : (
         <>
-          <StatusBar />
-
           {/* Theme toggle (top-right) */}
           <button
             onClick={() => dispatch({ type: 'TOGGLE_THEME' })}

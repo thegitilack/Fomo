@@ -43,16 +43,15 @@ export function App() {
     <div
       className={state.theme === 'light' ? 'theme-light' : ''}
       style={{
-        width: '390px',
-        height: '844px',
+        width: '100%',
+        height: '100dvh',
         background: 'var(--fomo-bg)',
-        borderRadius: '46px',
         overflow: 'hidden',
         position: 'relative',
         display: 'flex',
         flexDirection: 'column',
-        boxShadow: 'var(--fomo-shadow-screen)',
-        border: '1px solid var(--fomo-screen-border)',
+        paddingTop: 'env(safe-area-inset-top)',
+        paddingBottom: 'env(safe-area-inset-bottom)',
       }}
     >
       {/* Task Detail (pushed screen) */}

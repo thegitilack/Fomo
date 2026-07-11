@@ -11,12 +11,14 @@ html, body, #root {
   height: 100%;
 }
 
+#root {
+  width: 100%;
+  min-height: 100dvh;
+}
+
 body {
   background: var(--fomo-bg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
+  min-height: 100dvh;
   font-family: var(--fomo-font-sans);
 }
 

@@ -54,7 +54,11 @@
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('scripts',{}\\),indent=2\\)\\)\")",
       "Bash(npx pwa-assets-generator *)",
       "mcp__visualize__read_me",
-      "mcp__visualize__show_widget"
+      "mcp__visualize__show_widget",
+      "Bash(git commit -q -m ' *)",
+      "Bash(gh auth *)",
+      "Bash(git push *)",
+      "Bash(git add *)"
     ]
   }
 }

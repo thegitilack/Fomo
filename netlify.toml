@@ -2,14 +2,15 @@
   command = "npm run build"
   publish = "dist"
 
-# Serve the Fomo app at the site root
-[[redirects]]
-  from = "/"
-  to = "/fomo.html"
-  status = 200
-
+# The Fomo app is the site root (index.html).
 # Design-system style guide at /ds
 [[redirects]]
   from = "/ds"
   to = "/fomo-ds.html"
+  status = 200
+
+# Base component demo at /demo
+[[redirects]]
+  from = "/demo"
+  to = "/demo.html"
   status = 200

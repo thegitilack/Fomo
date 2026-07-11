@@ -21,7 +21,7 @@ export default defineConfig({
         background_color: '#0b0b0a',
         display: 'standalone',
         orientation: 'portrait',
-        start_url: '/fomo.html',
+        start_url: '/',
         scope: '/',
         icons: [
           { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
@@ -44,7 +44,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
-        fomo: resolve(__dirname, 'fomo.html'),
+        demo: resolve(__dirname, 'demo.html'),
         fomoDs: resolve(__dirname, 'fomo-ds.html'),
       },
     },

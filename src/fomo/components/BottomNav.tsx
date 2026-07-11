@@ -17,15 +17,15 @@ export function BottomNav({ active = 'today', onChange }: BottomNavProps) {
   return (
     <div style={{ position: 'relative' }}>
       <nav style={{
-        height: '88px',
         background: 'var(--fomo-nav-bg)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         borderTop: '1px solid var(--fomo-nav-border)',
         display: 'flex',
-        alignItems: 'flex-start',
+        alignItems: 'center',
         justifyContent: 'space-around',
-        paddingTop: '13px',
+        paddingTop: '12px',
+        paddingBottom: 'calc(12px + env(safe-area-inset-bottom))',
       }}>
         {TABS.map((t) => {
           const on = t.id === active

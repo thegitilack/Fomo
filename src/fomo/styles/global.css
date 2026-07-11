@@ -21,6 +21,14 @@ html, body {
   width: 100%;
 }
 
+/* Fill the full physical screen in iOS standalone: lvh = large viewport
+   (full screen), unlike vh/dvh/fixed which resolve to the shorter web
+   viewport and leave dead space at the bottom. */
+.app-shell {
+  height: 100vh;
+  height: 100lvh;
+}
+
 body {
   background: var(--fomo-bg);
   font-family: var(--fomo-font-sans);

@@ -91,13 +91,12 @@ export function App() {
 
   return (
     <div
-      className={state.theme === 'light' ? 'theme-light' : ''}
+      className={'app-shell' + (state.theme === 'light' ? ' theme-light' : '')}
       style={{
         position: 'fixed',
         top: 0,
         left: 0,
         right: 0,
-        bottom: 0,
         background: 'var(--fomo-bg)',
         overflow: 'hidden',
         display: 'flex',

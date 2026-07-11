@@ -42,11 +42,13 @@ export function App() {
     <div
       className={state.theme === 'light' ? 'theme-light' : ''}
       style={{
-        width: '100%',
-        height: '100%',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         background: 'var(--fomo-bg)',
         overflow: 'hidden',
-        position: 'relative',
         display: 'flex',
         flexDirection: 'column',
         paddingTop: 'env(safe-area-inset-top)',

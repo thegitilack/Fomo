@@ -11,14 +11,18 @@ html, body, #root {
   height: 100%;
 }
 
+/* Locked app shell: only inner content scrolls, never the page itself. */
+html, body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 #root {
   width: 100%;
-  min-height: 100dvh;
 }
 
 body {
   background: var(--fomo-bg);
-  min-height: 100dvh;
   font-family: var(--fomo-font-sans);
 }
 

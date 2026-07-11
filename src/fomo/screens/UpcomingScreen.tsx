@@ -14,7 +14,7 @@ export function UpcomingScreen({ grouped, onToggle, onOpen }: UpcomingScreenProp
   const entries = [...grouped.entries()].sort(([a], [b]) => a.localeCompare(b))
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', paddingBottom: '16px' }}>
+    <div style={{ flex: 1, overflowY: 'auto', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch', paddingBottom: '16px' }}>
       <div style={{ padding: '46px 26px 0' }}>
         <Eyebrow>Next 7 days</Eyebrow>
         <div style={{ height: '8px' }} />

@@ -7,7 +7,7 @@ interface EmptyStateProps {
 
 export function EmptyState({ eyebrow }: EmptyStateProps) {
   return (
-    <div style={{ flex: 1, overflowY: 'auto' }}>
+    <div style={{ flex: 1, overflowY: 'auto', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}>
       <div style={{ padding: '46px 26px 0' }}>
         <Eyebrow>{eyebrow}</Eyebrow>
         <div style={{ height: '8px' }} />

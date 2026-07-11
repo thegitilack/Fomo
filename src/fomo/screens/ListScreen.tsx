@@ -16,7 +16,7 @@ export function ListScreen({ eyebrow, title, tasks, onToggle, onOpen }: ListScre
   const sorted = [...tasks].sort((a, b) => (b.flagged ? 1 : 0) - (a.flagged ? 1 : 0))
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', paddingBottom: '16px' }}>
+    <div style={{ flex: 1, overflowY: 'auto', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch', paddingBottom: '16px' }}>
       <div style={{ padding: '46px 26px 0' }}>
         <Eyebrow>{eyebrow}</Eyebrow>
         <div style={{ height: '8px' }} />

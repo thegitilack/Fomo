@@ -43,7 +43,7 @@ export function App() {
       className={state.theme === 'light' ? 'theme-light' : ''}
       style={{
         width: '100%',
-        height: '100dvh',
+        height: '100%',
         background: 'var(--fomo-bg)',
         overflow: 'hidden',
         position: 'relative',

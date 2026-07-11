@@ -240,18 +240,6 @@ export function TaskDetail({ task, onBack, onToggleDone, onToggleFlag, onDelete,
           Delete task
         </button>
       </div>
-
-      {/* Home indicator */}
-      <div style={{
-        position: 'absolute',
-        bottom: '9px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: '134px',
-        height: '5px',
-        borderRadius: '3px',
-        background: 'var(--fomo-home-indicator)',
-      }} />
     </div>
   )
 }

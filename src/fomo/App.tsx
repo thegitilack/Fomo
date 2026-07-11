@@ -132,7 +132,7 @@ export function App() {
 
           {/* FAB + Bottom nav */}
           <div style={{ position: 'relative' }}>
-            <div style={{ position: 'absolute', right: 24, bottom: 'calc(82px + env(safe-area-inset-bottom))', zIndex: 2 }}>
+            <div style={{ position: 'absolute', right: 24, bottom: 'calc(76px + env(safe-area-inset-bottom))', zIndex: 2 }}>
               <FAB onClick={() => dispatch({ type: 'OPEN_SHEET' })} />
             </div>
             <BottomNav

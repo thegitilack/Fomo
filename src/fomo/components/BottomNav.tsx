@@ -24,8 +24,8 @@ export function BottomNav({ active = 'today', onChange }: BottomNavProps) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-around',
-        paddingTop: '12px',
-        paddingBottom: 'calc(12px + env(safe-area-inset-bottom))',
+        paddingTop: '10px',
+        paddingBottom: 'calc(8px + env(safe-area-inset-bottom))',
       }}>
         {TABS.map((t) => {
           const on = t.id === active

@@ -1,0 +1,15 @@
+/* ── Fomo elevation ──────────────────────────────────────────────────
+   Shadows are quiet. The FAB is the only floating element in the app
+   chrome; the device frame carries a soft drop shadow on the canvas. */
+
+:root {
+  --fomo-shadow-fab:    0 12px 30px -8px rgba(0,0,0,0.70);
+  --fomo-shadow-screen: 0 40px 90px -30px rgba(0,0,0,0.70);
+  --fomo-shadow-key:    0 1px 0 rgba(0,0,0,0.40);
+}
+
+.theme-light {
+  --fomo-shadow-fab:    0 10px 26px -8px rgba(0,0,0,0.16);
+  --fomo-shadow-screen: 0 30px 70px -28px rgba(0,0,0,0.22);
+  --fomo-shadow-key:    0 1px 0 rgba(0,0,0,0.15);
+}

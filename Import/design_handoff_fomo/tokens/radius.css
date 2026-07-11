@@ -1,0 +1,11 @@
+/* ── Fomo radii ──────────────────────────────────────────────────────
+   Subtle, not playful. Pills and the FAB are fully round. */
+
+:root {
+  --fomo-radius-sm:    4px;
+  --fomo-radius-md:    8px;
+  --fomo-radius-lg:   12px;   /* note card */
+  --fomo-radius-sheet: 22px;  /* add-task sheet top corners */
+  --fomo-radius-full: 999px;  /* chips, FAB, checkbox */
+  --fomo-radius-screen: 46px; /* device frame (mock only) */
+}

@@ -1,0 +1,57 @@
+name: Sync Figma tokens
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - figma-variables.json
+
+jobs:
+  sync:
+    name: Sync tokens from figma-variables.json
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Sync tokens
+        run: npm run sync-tokens
+
+      - name: Check for changes
+        id: diff
+        run: |
+          git diff --quiet src/index.css src/tokens/tokens.ts \
+            && echo "changed=false" >> "$GITHUB_OUTPUT" \
+            || echo "changed=true"  >> "$GITHUB_OUTPUT"
+
+      - name: Open PR if tokens changed
+        if: steps.diff.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: chore/sync-figma-tokens
+          commit-message: "chore: sync Figma design tokens"
+          title: "chore: sync Figma design tokens"
+          body: |
+            Automated token sync triggered by update to `figma-variables.json`.
+
+            Files changed:
+            - `src/index.css` — `@theme` block
+            - `src/tokens/tokens.ts` — JS token mirror
+          labels: tokens,automated
+          delete-branch: true

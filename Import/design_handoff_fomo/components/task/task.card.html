@@ -1,0 +1,42 @@
+<!-- @dsCard group="Components" viewport="700x260" name="Task Row" subtitle="Flagged, priority, plain and completed rows" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../../styles.css" />
+<style>
+  html,body{margin:0}
+  body{background:var(--fomo-bg);font-family:var(--fomo-font-sans);padding:14px 26px}
+  .col{max-width:360px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<script type="text/babel">
+  const NS = Object.values(window).find(o => o && typeof o === "object" && o.TaskRow) || {};
+  const { TaskRow } = NS;
+  function App(){
+    const [tasks,setTasks] = React.useState([
+      { id:1, name:"Call the pharmacy before it closes", meta:"Today · 6:00 PM", priority:true, flagged:true, done:false },
+      { id:2, name:"Reply to Mara about the weekend", meta:"9:30 AM", done:false },
+      { id:3, name:"Water the olive tree", done:false },
+      { id:4, name:"Morning walk", done:true },
+    ]);
+    if(!TaskRow) return <div style={{color:"#888",fontSize:13}}>Bundle loading…</div>;
+    const toggle = id => setTasks(ts => ts.map(t => t.id===id?{...t,done:!t.done}:t));
+    return (
+      <div className="col">
+        {tasks.map((t,i) => (
+          <TaskRow key={t.id} {...t} divider={i<tasks.length-1} onToggle={()=>toggle(t.id)} />
+        ))}
+      </div>
+    );
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>

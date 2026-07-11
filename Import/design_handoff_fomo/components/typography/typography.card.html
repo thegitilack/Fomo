@@ -1,0 +1,41 @@
+<!-- @dsCard group="Components" viewport="700x180" name="Header type" subtitle="Eyebrow + page title" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../../styles.css" />
+<style>
+  html,body{margin:0}
+  body{background:var(--fomo-bg);font-family:var(--fomo-font-sans);padding:30px 26px;display:flex;gap:60px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<script type="text/babel">
+  const NS = Object.values(window).find(o => o && typeof o === "object" && o.PageTitle && o.Eyebrow) || {};
+  const { PageTitle, Eyebrow } = NS;
+  function App(){
+    if(!PageTitle) return <div style={{color:"#888",fontSize:13}}>Bundle loading…</div>;
+    return (
+      <React.Fragment>
+        <div>
+          <Eyebrow>Sat · 27 June</Eyebrow>
+          <div style={{height:8}}></div>
+          <PageTitle>Today</PageTitle>
+        </div>
+        <div>
+          <Eyebrow>Tomorrow · Sun 28</Eyebrow>
+          <div style={{height:8}}></div>
+          <PageTitle>Upcoming</PageTitle>
+        </div>
+      </React.Fragment>
+    );
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+/* ── Fomo type system ────────────────────────────────────────────────
+   System font stack only (renders as San Francisco on Apple platforms).
+   Small uppercase labels use a monospace stack for the editorial feel.
+   No webfonts are shipped — these are platform fonts by design. */
+
+:root {
+  --fomo-font-sans: -apple-system, "Segoe UI", system-ui, sans-serif;
+  --fomo-font-mono: ui-monospace, "SF Mono", "Segoe UI Mono", Menlo, monospace;
+
+  /* Page title — "Today" / "Upcoming" */
+  --fomo-title-size:        28px;
+  --fomo-title-weight:      300;
+  --fomo-title-tracking:    -0.025em;
+
+  /* Detail task title */
+  --fomo-detail-size:       23px;
+  --fomo-detail-weight:     300;
+  --fomo-detail-tracking:   -0.02em;
+
+  /* Task name */
+  --fomo-task-size:         15px;
+  --fomo-task-weight:       300;
+  --fomo-task-tracking:     -0.01em;
+  --fomo-task-leading:      1.35;
+
+  /* Metadata (date / time) */
+  --fomo-meta-size:         13px;
+  --fomo-meta-weight:       400;
+
+  /* Eyebrow / date-group header (mono, uppercase) */
+  --fomo-label-size:        11px;
+  --fomo-label-tracking:    0.20em;
+
+  /* Bottom-bar label */
+  --fomo-navlabel-size:     11px;
+  --fomo-navlabel-weight:   500;
+  --fomo-navlabel-tracking: 0.04em;
+
+  /* Note body */
+  --fomo-note-size:         15px;
+  --fomo-note-weight:       300;
+  --fomo-note-leading:      1.6;
+
+  /* Status-bar time */
+  --fomo-time-size:         16px;
+  --fomo-time-weight:       600;
+}

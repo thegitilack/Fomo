@@ -1,0 +1,45 @@
+<!-- @dsCard group="Components" viewport="700x150" name="Icons" subtitle="The full Fomo line-icon set" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../../styles.css" />
+<style>
+  html,body{margin:0}
+  body{background:var(--fomo-bg);font-family:var(--fomo-font-sans);padding:22px 26px;}
+  .row{display:flex;flex-wrap:wrap;gap:22px;align-items:center}
+  .cell{display:flex;flex-direction:column;align-items:center;gap:8px}
+  .lab{font-family:var(--fomo-font-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--fomo-text-muted)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<script type="text/babel">
+  const NS = Object.values(window).find(o => o && typeof o === "object" && o.Icon && o.TaskRow) || {};
+  const { Icon } = NS;
+  const names = ["today","chevron","list","plus","back","check","flag","calendar","repeat","note"];
+  function Card(){
+    if(!Icon) return <div style={{color:"var(--fomo-text-secondary)",fontSize:13}}>Bundle loading…</div>;
+    return (
+      <div className="row">
+        {names.map(n => (
+          <div className="cell" key={n}>
+            <Icon name={n} size={24} stroke="var(--fomo-text-primary)" />
+            <span className="lab">{n}</span>
+          </div>
+        ))}
+        <div className="cell">
+          <Icon name="flag" size={24} stroke="var(--fomo-accent)" />
+          <span className="lab" style={{color:"var(--fomo-accent)"}}>accent</span>
+        </div>
+      </div>
+    );
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(<Card/>);
+</script>
+</body>
+</html>

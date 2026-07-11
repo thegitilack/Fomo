@@ -1,0 +1,148 @@
+@import "tailwindcss";
+
+/* ── Light theme overrides (applied via .theme-light on <html>) ── */
+.theme-light {
+  --color-bg:              #f4f2ec;
+  --color-surface-sheet:   #faf8f3;
+  --color-surface-raised:  #ffffff;
+
+  --color-bg-primary:      #f4f2ec;
+  --color-bg-secondary:    #faf8f3;
+  --color-bg-tertiary:     #ffffff;
+  --color-bg-accent:       #a8742f;
+  --color-bg-accent-hover: #8a5f24;
+  --color-bg-error:        rgba(161,80,63,0.10);
+
+  --color-text-primary:    #1a1712;
+  --color-text-secondary:  #837e72;
+  --color-text-muted:      #9a958a;
+  --color-text-faint:      #a8a298;
+  --color-text-done:       #b3aea3;
+  --color-text-tertiary:   #9a958a;
+  --color-text-inverse:    #fbf6ee;
+  --color-text-error:      #a1503f;
+  --color-text-on-accent:  #fbf6ee;
+
+  --color-accent:          #a8742f;
+  --color-accent-strong:   #8a5f24;
+  --color-on-accent:       #fbf6ee;
+  --color-danger:          #a1503f;
+
+  --color-divider:         rgba(0,0,0,0.07);
+  --color-ring:            rgba(0,0,0,0.30);
+  --color-hairline:        rgba(0,0,0,0.07);
+  --color-scrim:           rgba(0,0,0,0.50);
+  --color-border-default:  rgba(0,0,0,0.13);
+  --color-border-subtle:   rgba(0,0,0,0.07);
+  --color-border-accent:   #a8742f;
+  --color-border-error:    #a1503f;
+
+  --shadow-fab:    0 10px 26px -8px rgba(0,0,0,0.16);
+  --shadow-screen: 0 30px 70px -28px rgba(0,0,0,0.22);
+  --shadow-key:    0 1px 0 rgba(0,0,0,0.15);
+}
+
+@theme {
+  /* ──────────────────────────────────────────────────────
+     COLORS — Surfaces
+     ────────────────────────────────────────────────────── */
+  --color-bg:             #0b0b0a;
+  --color-surface-sheet:  #141413;
+  --color-surface-raised: #1a1a16;
+
+  /* Component-compat aliases */
+  --color-bg-primary:      #0b0b0a;
+  --color-bg-secondary:    #141413;
+  --color-bg-tertiary:     #1a1a16;
+  --color-bg-accent:       #c6a47a;
+  --color-bg-accent-hover: #d8c3a1;
+  --color-bg-error:        rgba(154,107,94,0.10);
+
+  /* ──────────────────────────────────────────────────────
+     COLORS — Text
+     ────────────────────────────────────────────────────── */
+  --color-text-primary:   #eceae6;
+  --color-text-secondary: #86837c;
+  --color-text-muted:     #6f6c66;
+  --color-text-faint:     #66645e;
+  --color-text-done:      #5f5d57;
+  --color-text-tertiary:  #6f6c66;
+  --color-text-inverse:   #1a140b;
+  --color-text-error:     #9a6b5e;
+  --color-text-on-accent: #1a140b;
+
+  /* ──────────────────────────────────────────────────────
+     COLORS — Accent & Semantic
+     ────────────────────────────────────────────────────── */
+  --color-accent:        #c6a47a;
+  --color-accent-strong: #d8c3a1;
+  --color-on-accent:     #1a140b;
+  --color-danger:        #9a6b5e;
+
+  /* ──────────────────────────────────────────────────────
+     COLORS — Lines & Overlays
+     ────────────────────────────────────────────────────── */
+  --color-divider:        rgba(255,255,255,0.055);
+  --color-ring:           rgba(255,255,255,0.30);
+  --color-hairline:       rgba(255,255,255,0.07);
+  --color-scrim:          rgba(0,0,0,0.50);
+
+  --color-border-default: rgba(255,255,255,0.13);
+  --color-border-subtle:  rgba(255,255,255,0.07);
+  --color-border-accent:  #c6a47a;
+  --color-border-error:   #9a6b5e;
+
+  /* ──────────────────────────────────────────────────────
+     TYPOGRAPHY
+     ────────────────────────────────────────────────────── */
+  --font-sans: -apple-system, "Segoe UI", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Segoe UI Mono", Menlo, monospace;
+
+  --text-xs:   11px;
+  --text-sm:   13px;
+  --text-base: 15px;
+  --text-lg:   18px;
+  --text-xl:   22px;
+  --text-2xl:  28px;
+  --text-3xl:  30px;
+
+  /* ──────────────────────────────────────────────────────
+     SPACING  (Fomo scale)
+     ────────────────────────────────────────────────────── */
+  --spacing-000: 0px;
+  --spacing-100: 4px;
+  --spacing-150: 6px;
+  --spacing-200: 8px;
+  --spacing-300: 12px;
+  --spacing-400: 14px;
+  --spacing-500: 18px;
+  --spacing-600: 22px;
+  --spacing-700: 26px;
+  --spacing-800: 32px;
+  --spacing-900: 46px;
+
+  /* ──────────────────────────────────────────────────────
+     BORDER RADIUS  (Fomo scale)
+     ────────────────────────────────────────────────────── */
+  --radius-none:  0px;
+  --radius-sm:    4px;
+  --radius-md:    8px;
+  --radius-lg:    12px;
+  --radius-xl:    22px;
+  --radius-full:  999px;
+
+  /* Old numeric aliases used by existing components */
+  --radius-000: 0px;
+  --radius-100: 4px;
+  --radius-200: 8px;
+  --radius-300: 12px;
+  --radius-400: 22px;
+  --radius-500: 999px;
+
+  /* ──────────────────────────────────────────────────────
+     ELEVATION
+     ────────────────────────────────────────────────────── */
+  --shadow-fab:    0 12px 30px -8px rgba(0,0,0,0.70);
+  --shadow-screen: 0 40px 90px -30px rgba(0,0,0,0.70);
+  --shadow-key:    0 1px 0 rgba(0,0,0,0.40);
+}

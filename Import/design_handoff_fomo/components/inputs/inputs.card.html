@@ -1,0 +1,53 @@
+<!-- @dsCard group="Components" viewport="700x210" name="Inputs" subtitle="Checkbox + metadata chips, both themes" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../../styles.css" />
+<style>
+  html,body{margin:0}
+  body{font-family:var(--fomo-font-sans)}
+  .panel{padding:22px 26px;display:flex;flex-direction:column;gap:18px}
+  .dark{background:#0b0b0a}
+  .light{background:#f4f2ec}
+  .line{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+  .lab{font-family:var(--fomo-font-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--fomo-text-muted)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<script type="text/babel">
+  const NS = Object.values(window).find(o => o && typeof o === "object" && o.Checkbox && o.Chip && o.Icon) || {};
+  const { Checkbox, Chip, Icon } = NS;
+  function Demo(){
+    const [a,setA] = React.useState(false);
+    if(!Checkbox) return <div style={{color:"#888",fontSize:13,padding:24}}>Bundle loading…</div>;
+    return (
+      <div className="line">
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <Checkbox checked={a} onChange={()=>setA(!a)} />
+          <Checkbox checked />
+          <span className="lab">checkbox</span>
+        </div>
+        <Chip label="Due date" icon={<Icon name="calendar" size={13} stroke="var(--fomo-text-secondary)" />} />
+        <Chip label="Repeat" icon={<Icon name="repeat" size={13} stroke="var(--fomo-text-secondary)" />} />
+        <Chip label="Today · 6:00 PM" active icon={<Icon name="calendar" size={13} stroke="var(--fomo-accent-strong)" />} />
+      </div>
+    );
+  }
+  function App(){
+    return (
+      <div>
+        <div className="panel dark"><Demo/></div>
+        <div className="panel light theme-light"><Demo/></div>
+      </div>
+    );
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>

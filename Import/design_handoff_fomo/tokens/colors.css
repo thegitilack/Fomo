@@ -1,0 +1,77 @@
+/* ── Fomo colour system ──────────────────────────────────────────────
+   Dark is the default theme (the product is dark-first). Wrap any subtree
+   in class .theme-light to flip to the paper theme. Colour is used as
+   sparingly as possible: a single warm accent is the only hue in the app. */
+
+:root {
+  /* surfaces */
+  --fomo-bg:               #0b0b0a;  /* screen background (near-black, warm) */
+  --fomo-surface-raised:   #1a1a16;  /* FAB */
+  --fomo-surface-sheet:    #141413;  /* add-task sheet */
+  --fomo-keyboard-bg:      #1c1c1e;  /* system keyboard backdrop */
+  --fomo-key:              #545456;  /* keyboard letter key */
+  --fomo-key-special:      #3a3a3c;  /* keyboard modifier key */
+
+  /* text */
+  --fomo-text-primary:     #eceae6;  /* titles, task names, status bar */
+  --fomo-text-secondary:   #86837c;  /* metadata (date / time) */
+  --fomo-text-muted:       #6f6c66;  /* eyebrows, date-group headers */
+  --fomo-text-faint:       #66645e;  /* inactive nav */
+  --fomo-text-done:        #5f5d57;  /* completed task (with line-through) */
+
+  /* accent — the only hue */
+  --fomo-accent:           #c6a47a;  /* priority dot, flag, caret, done-fill */
+  --fomo-accent-strong:    #d8c3a1;  /* active chip text / icon */
+  --fomo-on-accent:        #1a140b;  /* text on a filled accent surface */
+  --fomo-danger:           #9a6b5e;  /* destructive (Delete task) */
+
+  /* lines & overlays */
+  --fomo-divider:          rgba(255,255,255,0.055); /* task row separators */
+  --fomo-ring:             rgba(255,255,255,0.30);  /* checkbox outline */
+  --fomo-ring-strong:      rgba(255,255,255,0.32);
+  --fomo-hairline:         rgba(255,255,255,0.07);  /* card / sheet borders */
+  --fomo-border:           rgba(255,255,255,0.13);  /* chip outline */
+  --fomo-screen-border:    rgba(255,255,255,0.09);  /* device frame */
+  --fomo-nav-bg:           rgba(11,11,10,0.94);      /* bottom bar (blurred) */
+  --fomo-nav-border:       rgba(255,255,255,0.06);
+  --fomo-scrim:            rgba(0,0,0,0.50);          /* add-task overlay */
+  --fomo-note-fill:        rgba(255,255,255,0.03);    /* note card fill */
+  --fomo-chip-active-bd:   rgba(198,164,122,0.45);
+  --fomo-chip-active-bg:   rgba(198,164,122,0.10);
+  --fomo-home-indicator:   rgba(255,255,255,0.16);
+}
+
+/* ── Paper theme ─────────────────────────────────────────────────────── */
+.theme-light {
+  --fomo-bg:               #f4f2ec;
+  --fomo-surface-raised:   #ffffff;
+  --fomo-surface-sheet:    #faf8f3;
+  --fomo-keyboard-bg:      #d3d6dc;
+  --fomo-key:              #ffffff;
+  --fomo-key-special:      #adb2bc;
+
+  --fomo-text-primary:     #1a1712;
+  --fomo-text-secondary:   #837e72;
+  --fomo-text-muted:       #9a958a;
+  --fomo-text-faint:       #a8a298;
+  --fomo-text-done:        #b3aea3;
+
+  --fomo-accent:           #a8742f;  /* deeper ochre for contrast on paper */
+  --fomo-accent-strong:    #8a5f24;
+  --fomo-on-accent:        #fbf6ee;
+  --fomo-danger:           #a1503f;
+
+  --fomo-divider:          rgba(0,0,0,0.07);
+  --fomo-ring:             rgba(0,0,0,0.30);
+  --fomo-ring-strong:      rgba(0,0,0,0.32);
+  --fomo-hairline:         rgba(0,0,0,0.07);
+  --fomo-border:           rgba(0,0,0,0.13);
+  --fomo-screen-border:    rgba(0,0,0,0.09);
+  --fomo-nav-bg:           rgba(244,242,236,0.90);
+  --fomo-nav-border:       rgba(0,0,0,0.07);
+  --fomo-scrim:            rgba(0,0,0,0.50);
+  --fomo-note-fill:        rgba(0,0,0,0.025);
+  --fomo-chip-active-bd:   rgba(168,116,47,0.50);
+  --fomo-chip-active-bg:   rgba(168,116,47,0.12);
+  --fomo-home-indicator:   rgba(0,0,0,0.18);
+}

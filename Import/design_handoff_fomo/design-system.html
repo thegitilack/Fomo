@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fomo — Design System</title>
+<link rel="stylesheet" href="styles.css" />
+<style>
+  html, body { margin: 0; }
+  body {
+    background: #0b0b0a;
+    color: #eceae6;
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: rgba(198,164,122,0.3); }
+  @keyframes fomo-caret { 0%,50% { opacity: 1 } 51%,100% { opacity: 0 } }
+
+  a { color: inherit; text-decoration: none; }
+  .mono { font-family: ui-monospace, "SF Mono", "Segoe UI Mono", Menlo, monospace; }
+
+  /* layout */
+  .wrap { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
+  .side {
+    position: sticky; top: 0; align-self: start; height: 100vh;
+    border-right: 1px solid rgba(255,255,255,0.07);
+    padding: 40px 0 40px 40px; box-sizing: border-box;
+    display: flex; flex-direction: column;
+  }
+  .brand { font-size: 26px; font-weight: 300; letter-spacing: -0.04em; }
+  .brand b { color: #c6a47a; font-weight: 300; }
+  .side .tag { margin-top: 8px; font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase; color: #6f6c66; }
+  .nav { margin-top: 46px; display: flex; flex-direction: column; gap: 2px; }
+  .nav a {
+    font-size: 13px; color: #86837c; padding: 8px 0; letter-spacing: 0.01em;
+    border-left: 1px solid transparent; padding-left: 0; transition: color .15s;
+  }
+  .nav a:hover { color: #eceae6; }
+  .nav .grouplab { font-family: ui-monospace, monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #4f4d48; margin: 22px 0 6px; }
+
+  .main { padding: 0; }
+  .inner { max-width: 980px; padding: 64px 56px 120px; box-sizing: border-box; }
+
+  section { scroll-margin-top: 24px; padding-top: 26px; }
+  .sec-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 4px; }
+  .sec-num { font-family: ui-monospace, monospace; font-size: 11px; letter-spacing: 0.2em; color: #c6a47a; }
+  h2 { font-size: 30px; font-weight: 300; letter-spacing: -0.03em; margin: 0; }
+  .sec-sub { color: #86837c; font-size: 14px; font-weight: 300; line-height: 1.6; max-width: 620px; margin: 12px 0 30px; }
+  .divider-row { height: 1px; background: rgba(255,255,255,0.06); margin: 64px 0 0; }
+
+  .blocklab { font-family: ui-monospace, monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #6f6c66; margin: 30px 0 16px; }
+
+  /* token tables / swatch grids built in React */
+  .grid { display: grid; gap: 14px; }
+
+  /* theme preview toggle */
+  .panelhead { display: flex; align-items: center; justify-content: space-between; margin: 30px 0 16px; }
+  .toggle { display: inline-flex; gap: 3px; padding: 3px; background: rgba(255,255,255,0.06); border-radius: 999px; }
+  .toggle button { border: none; background: none; cursor: pointer; font-family: ui-monospace, monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: #b6b2a8; padding: 6px 14px; border-radius: 999px; }
+  .toggle button.on { background: #f4f2ec; color: #1a1712; }
+
+  .preview { border-radius: 14px; border: 1px solid rgba(255,255,255,0.07); overflow: hidden; }
+  .preview.light-host { border-color: rgba(0,0,0,0.1); }
+
+  @media (max-width: 820px) {
+    .wrap { grid-template-columns: 1fr; }
+    .side { position: static; height: auto; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.07); padding: 28px 28px; }
+    .nav { display: none; }
+    .inner { padding: 40px 28px 100px; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script>
+  Babel.registerPreset("react-classic", {
+    presets: [[Babel.availablePresets["react"], { runtime: "classic" }]],
+  });
+</script>
+<script type="text/plain" id="ds-src">
+/* ===================================================================
+   Fomo design-system components — inlined so this page renders without
+   the host bundle. Canonical source lives in components/ and ui_kits/.
+   All read the same --fomo-* tokens from styles.css.
+   =================================================================== */
+const V = (n) => `var(--fomo-${n})`;
+
+const ICONS = {
+  today:   { vb:"0 0 24 24", el:(c,s)=>[<circle key="r" cx="12" cy="12" r="6.5" stroke={c} strokeWidth={s} fill="none"/>,<circle key="d" cx="12" cy="12" r="1.7" fill={c}/>] },
+  chevron: { vb:"0 0 24 24", el:(c,s)=>[<path key="p" d="M9 6l6 6-6 6" stroke={c} strokeWidth={s} strokeLinecap="round" strokeLinejoin="round" fill="none"/>] },
+  list:    { vb:"0 0 24 24", el:(c,s)=>[<path key="p" d="M5 8h14M5 12h14M5 16h10" stroke={c} strokeWidth={s} strokeLinecap="round"/>] },
+  plus:    { vb:"0 0 24 24", el:(c,s)=>[<path key="p" d="M12 5v14M5 12h14" stroke={c} strokeWidth={s} strokeLinecap="round"/>] },
+  back:    { vb:"0 0 24 24", el:(c,s)=>[<path key="p" d="M15 5l-7 7 7 7" stroke={c} strokeWidth={s} strokeLinecap="round" strokeLinejoin="round" fill="none"/>] },
+  check:   { vb:"0 0 12 12", el:(c,s)=>[<path key="p" d="M2.5 6.2l2.3 2.3 4.7-5" stroke={c} strokeWidth={s} strokeLinecap="round" strokeLinejoin="round" fill="none"/>] },
+  flag:    { vb:"0 0 12 14", el:(c,s)=>[<path key="a" d="M2 1v12" stroke={c} strokeWidth={s} strokeLinecap="round"/>,<path key="b" d="M2.4 1.6l7.6 2.1-7.6 2.1z" fill={c} fillOpacity="0.9"/>] },
+  calendar:{ vb:"0 0 14 14", el:(c,s)=>[<rect key="b" x="1.5" y="2.5" width="11" height="10" rx="2" stroke={c} strokeWidth={s} fill="none"/>,<path key="l" d="M1.5 5.5h11M4.5 1v2M9.5 1v2" stroke={c} strokeWidth={s} strokeLinecap="round"/>] },
+  repeat:  { vb:"0 0 14 14", el:(c,s)=>[<path key="a" d="M2 7a5 5 0 1 1 1.5 3.6" stroke={c} strokeWidth={s} strokeLinecap="round" fill="none"/>,<path key="h" d="M2 11V7.5h3.5" stroke={c} strokeWidth={s} strokeLinecap="round" strokeLinejoin="round" fill="none"/>] },
+  note:    { vb:"0 0 14 14", el:(c,s)=>[<path key="p" d="M3 3.5h8M3 7h8M3 10.5h5" stroke={c} strokeWidth={s} strokeLinecap="round"/>] },
+};
+function Icon({ name, size=22, stroke="currentColor", strokeWidth, style }) {
+  const ic = ICONS[name]; if (!ic) return null;
+  const sw = strokeWidth ?? (ic.vb.endsWith("12") || ic.vb.endsWith("14") ? 1.3 : 1.5);
+  return <svg width={size} height={size} viewBox={ic.vb} fill="none" style={{ display:"block", flex:"none", ...style }}>{ic.el(stroke, sw)}</svg>;
+}
+const ICON_NAMES = Object.keys(ICONS);
+
+function Checkbox({ checked=false, size=20, onChange }) {
+  return (
+    <button type="button" aria-pressed={checked} onClick={onChange}
+      style={{ width:size+"px", height:size+"px", flex:"none", padding:0, margin:0, cursor:"pointer", borderRadius:"50%",
+        background: checked ? V("accent") : "transparent", border:`1.5px solid ${checked ? V("accent") : V("ring")}`,
+        display:"flex", alignItems:"center", justifyContent:"center", transition:"background 150ms ease, border-color 150ms ease" }}>
+      {checked && <Icon name="check" size={size*0.55} stroke={V("bg")} strokeWidth={1.6} />}
+    </button>
+  );
+}
+function Chip({ label, icon, active=false, onClick }) {
+  return (
+    <button type="button" onClick={onClick}
+      style={{ display:"inline-flex", alignItems:"center", gap:"7px", padding:"9px 14px", borderRadius:V("radius-full"),
+        border:`1px solid ${active ? V("chip-active-bd") : V("border")}`, background: active ? V("chip-active-bg") : "transparent",
+        color: active ? V("accent-strong") : V("text-secondary"), fontFamily:V("font-sans"), fontSize:"13px", fontWeight:400, cursor:"pointer", whiteSpace:"nowrap" }}>
+      {icon}<span>{label}</span>
+    </button>
+  );
+}
+function TaskRow({ name, meta, priority=false, flagged=false, done=false, onToggle, onOpen, divider=true }) {
+  return (
+    <div style={{ display:"flex", alignItems:"flex-start", gap:"14px", padding:"14px 0", borderBottom: divider ? `1px solid ${V("divider")}` : "none" }}>
+      <Checkbox checked={done} onChange={onToggle} />
+      <div onClick={onOpen} style={{ flex:1, minWidth:0, cursor: onOpen ? "pointer" : "default" }}>
+        <div style={{ fontFamily:V("font-sans"), fontSize:"15px", fontWeight:300, letterSpacing:"-0.01em", lineHeight:1.35,
+          color: done ? V("text-done") : V("text-primary"), textDecoration: done ? "line-through" : "none", textDecorationColor:V("ring") }}>{name}</div>
+        {meta && (
+          <div style={{ display:"flex", alignItems:"center", gap:"8px", marginTop:"6px" }}>
+            {priority && <span style={{ width:"5px", height:"5px", borderRadius:"50%", background:V("accent"), flex:"none" }} />}
+            <span style={{ fontSize:"13px", fontWeight:400, color:V("text-secondary") }}>{meta}</span>
+          </div>
+        )}
+      </div>
+      {flagged && <div style={{ marginTop:"2px" }}><Icon name="flag" size={14} stroke={V("accent")} /></div>}
+    </div>
+  );
+}
+function FAB({ onClick, size=58 }) {
+  return (
+    <button type="button" aria-label="Add task" onClick={onClick}
+      style={{ width:size, height:size, borderRadius:"50%", background:V("surface-raised"), border:`1px solid ${V("border")}`,
+        boxShadow:V("shadow-fab"), cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", padding:0 }}>
+      <span style={{ position:"relative", width:"20px", height:"20px", display:"block" }}>
+        <span style={{ position:"absolute", left:"50%", top:0, transform:"translateX(-50%)", width:"1.5px", height:"20px", background:V("text-primary") }} />
+        <span style={{ position:"absolute", top:"50%", left:0, transform:"translateY(-50%)", height:"1.5px", width:"20px", background:V("text-primary") }} />
+      </span>
+    </button>
+  );
+}
+const TABS = [ {id:"today",label:"Today",icon:"today"}, {id:"upcoming",label:"Upcoming",icon:"chevron"}, {id:"all",label:"All",icon:"list"} ];
+function BottomNav({ active="today", onChange }) {
+  return (
+    <nav style={{ height:"88px", background:V("nav-bg"), backdropFilter:"blur(20px)", WebkitBackdropFilter:"blur(20px)",
+      borderTop:`1px solid ${V("nav-border")}`, display:"flex", alignItems:"flex-start", justifyContent:"space-around", paddingTop:"13px" }}>
+      {TABS.map((t) => {
+        const on = t.id === active; const color = on ? V("text-primary") : V("text-faint");
+        return (
+          <button key={t.id} type="button" onClick={() => onChange && onChange(t.id)}
+            style={{ background:"none", border:"none", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:"6px", padding:0 }}>
+            <Icon name={t.icon} size={22} stroke={color} />
+            <span style={{ fontFamily:V("font-sans"), fontSize:"11px", fontWeight:500, letterSpacing:"0.04em", color }}>{t.label}</span>
+          </button>
+        );
+      })}
+    </nav>
+  );
+}
+function StatusBar({ time="22:01", battery=41 }) {
+  const pct = Math.max(4, Math.min(100, battery));
+  return (
+    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"18px 30px 0" }}>
+      <span style={{ fontFamily:V("font-sans"), fontSize:"16px", fontWeight:600, letterSpacing:"-0.01em", color:V("text-primary") }}>{time}</span>
+      <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
+        <div style={{ display:"flex", alignItems:"flex-end", gap:"2px", height:"11px" }}>
+          {[4,6,8,11].map((h,i) => <span key={i} style={{ width:"3px", height:h+"px", background:V("text-primary"), borderRadius:"1px" }} />)}
+        </div>
+        <span style={{ fontFamily:V("font-sans"), fontSize:"13px", fontWeight:600, color:V("text-primary") }}>{battery}</span>
+        <div style={{ width:"24px", height:"12px", border:`1px solid ${V("ring")}`, borderRadius:"3px", position:"relative", padding:"1.5px" }}>
+          <div style={{ width:pct+"%", height:"100%", background:V("text-primary"), borderRadius:"1px" }} />
+          <span style={{ position:"absolute", right:"-3px", top:"3.5px", width:"2px", height:"5px", background:V("ring"), borderRadius:"0 1px 1px 0" }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+function Eyebrow({ children, style }) {
+  return <div style={{ fontFamily:V("font-mono"), fontSize:"11px", letterSpacing:"0.20em", textTransform:"uppercase", color:V("text-muted"), ...style }}>{children}</div>;
+}
+function PageTitle({ children, style }) {
+  return <div style={{ fontFamily:V("font-sans"), fontSize:"28px", fontWeight:300, letterSpacing:"-0.025em", color:V("text-primary"), ...style }}>{children}</div>;
+}
+
+/* ---- screens ---- */
+function AppShell({ children, chrome=true, view="today", onView, onAdd }) {
+  return (
+    <div style={{ position:"relative", width:"390px", height:"844px", background:V("bg"), borderRadius:"46px",
+      border:`1px solid ${V("screen-border")}`, overflow:"hidden", boxShadow:V("shadow-screen"), fontFamily:V("font-sans") }}>
+      <StatusBar />{children}
+      {chrome && (
+        <React.Fragment>
+          <div style={{ position:"absolute", bottom:"106px", left:"50%", transform:"translateX(-50%)" }}><FAB onClick={onAdd} /></div>
+          <div style={{ position:"absolute", left:0, right:0, bottom:0 }}><BottomNav active={view} onChange={onView} /></div>
+          <div style={{ position:"absolute", bottom:"9px", left:"50%", transform:"translateX(-50%)", width:"134px", height:"5px", borderRadius:"3px", background:V("home-indicator") }} />
+        </React.Fragment>
+      )}
+    </div>
+  );
+}
+function ListScreen({ eyebrow, title, tasks, onToggle, onOpen }) {
+  const sorted = [...tasks].sort((a,b) => (b.flagged?1:0) - (a.flagged?1:0));
+  return (
+    <div>
+      <div style={{ padding:"46px 26px 0" }}><Eyebrow>{eyebrow}</Eyebrow><div style={{height:"8px"}}/><PageTitle>{title}</PageTitle></div>
+      <div style={{ padding:"30px 26px 0" }}>{sorted.map((t,i) => <TaskRow key={t.id} {...t} divider={i<sorted.length-1} onToggle={() => onToggle && onToggle(t.id)} onOpen={() => onOpen && onOpen(t.id)} />)}</div>
+    </div>
+  );
+}
+function UpcomingScreen({ groups }) {
+  return (
+    <div>
+      <div style={{ padding:"46px 26px 0" }}><Eyebrow>Next 7 days</Eyebrow><div style={{height:"8px"}}/><PageTitle>Upcoming</PageTitle></div>
+      <div style={{ padding:"24px 26px 0" }}>
+        {groups.map((g,gi) => (
+          <div key={gi}>
+            <div style={{ fontFamily:V("font-mono"), fontSize:"11px", letterSpacing:"0.18em", textTransform:"uppercase", color:V("text-muted"), padding: gi===0 ? "14px 0 4px" : "22px 0 4px" }}>{g.label}</div>
+            {g.tasks.map((t,i) => <TaskRow key={t.id} {...t} divider={i<g.tasks.length-1} />)}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+function EmptyState({ eyebrow="Sat · 27 June", title="Today" }) {
+  return (
+    <div>
+      <div style={{ padding:"46px 26px 0" }}><Eyebrow>{eyebrow}</Eyebrow><div style={{height:"8px"}}/><PageTitle>{title}</PageTitle></div>
+      <div style={{ padding:"0 26px", position:"absolute", top:"340px" }}>
+        <div style={{ fontFamily:V("font-sans"), fontSize:"19px", fontWeight:300, letterSpacing:"-0.01em", lineHeight:1.5, color:V("text-primary"), opacity:0.85 }}>Nothing due today.</div>
+        <div style={{ fontFamily:V("font-sans"), fontSize:"15px", fontWeight:300, lineHeight:1.5, color:V("text-muted"), marginTop:"10px" }}>A good day to rest. Add something only if it matters.</div>
+      </div>
+    </div>
+  );
+}
+function TaskDetail({ task }) {
+  const t = task || {};
+  return (
+    <div>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"14px 22px 0" }}>
+        <Icon name="back" size={24} stroke={V("text-primary")} /><Icon name="flag" size={16} stroke={V("accent")} />
+      </div>
+      <div style={{ display:"flex", gap:"16px", alignItems:"flex-start", padding:"0 26px", marginTop:"26px" }}>
+        <div style={{ marginTop:"4px" }}><Checkbox checked={false} size={24} /></div>
+        <div style={{ fontFamily:V("font-sans"), fontSize:"23px", fontWeight:300, letterSpacing:"-0.02em", lineHeight:1.3, color:V("text-primary") }}>{t.name}</div>
+      </div>
+      <div style={{ display:"flex", flexWrap:"wrap", gap:"9px", padding:"0 26px", marginTop:"28px" }}>
+        <Chip label={t.meta || "Today · 6:00 PM"} active icon={<Icon name="calendar" size={13} stroke={V("accent-strong")} />} />
+        <Chip label="Flagged" active icon={<Icon name="flag" size={13} stroke={V("accent-strong")} />} />
+        <Chip label="Repeat" icon={<Icon name="repeat" size={13} stroke={V("text-secondary")} />} />
+      </div>
+      <div style={{ margin:"26px 26px 0", borderRadius:"12px", background:V("note-fill"), border:`1px solid ${V("hairline")}`, padding:"16px" }}>
+        <div style={{ fontFamily:V("font-mono"), fontSize:"11px", letterSpacing:"0.16em", textTransform:"uppercase", color:V("text-muted"), marginBottom:"12px" }}>Note</div>
+        <div style={{ fontFamily:V("font-sans"), fontSize:"15px", fontWeight:300, lineHeight:1.6, color:V("text-primary"), opacity:0.85 }}>{t.note}</div>
+      </div>
+      <div style={{ position:"absolute", bottom:"40px", left:"26px", fontFamily:V("font-sans"), fontSize:"15px", fontWeight:300, color:V("danger") }}>Delete task</div>
+      <div style={{ position:"absolute", bottom:"9px", left:"50%", transform:"translateX(-50%)", width:"134px", height:"5px", borderRadius:"3px", background:V("home-indicator") }} />
+    </div>
+  );
+}
+const R1 = "QWERTYUIOP".split(""), R2 = "ASDFGHJKL".split(""), R3 = "ZXCVBNM".split("");
+function Key({ children, flex=1, special, accent, wide }) {
+  return (
+    <div style={{ flex, height:"42px", borderRadius:"5px", background: accent ? V("accent") : special ? V("key-special") : V("key"),
+      color: accent ? V("on-accent") : V("text-primary"), fontFamily:V("font-sans"), fontSize: wide ? "14px" : "18px", fontWeight: accent ? 500 : 400,
+      boxShadow: accent ? "none" : V("shadow-key"), display:"flex", alignItems:"center", justifyContent:"center" }}>{children}</div>
+  );
+}
+function Keyboard() {
+  return (
+    <div style={{ background:V("keyboard-bg"), padding:"8px 3px 4px" }}>
+      <div style={{ display:"flex", gap:"6px", padding:"0 3px", marginBottom:"8px" }}>{R1.map((c) => <Key key={c}>{c}</Key>)}</div>
+      <div style={{ display:"flex", gap:"6px", padding:"0 22px", marginBottom:"8px" }}>{R2.map((c) => <Key key={c}>{c}</Key>)}</div>
+      <div style={{ display:"flex", gap:"6px", padding:"0 3px", marginBottom:"8px" }}>
+        <Key flex={1.5} special>⇧</Key>{R3.map((c) => <Key key={c}>{c}</Key>)}<Key flex={1.5} special>⌫</Key>
+      </div>
+      <div style={{ display:"flex", gap:"6px", padding:"0 3px" }}>
+        <Key flex={1.6} special wide>123</Key><Key flex={5} wide>space</Key><Key flex={2.4} wide accent>return</Key>
+      </div>
+      <div style={{ position:"relative", height:"18px" }}>
+        <div style={{ position:"absolute", bottom:"1px", left:"50%", transform:"translateX(-50%)", width:"134px", height:"5px", borderRadius:"3px", background:V("home-indicator") }} />
+      </div>
+    </div>
+  );
+}
+function AddTaskSheet({ value="Pick up dry cleaning" }) {
+  return (
+    <div style={{ position:"absolute", inset:0, zIndex:5 }}>
+      <div style={{ position:"absolute", inset:0, background:V("scrim") }} />
+      <div style={{ position:"absolute", left:0, right:0, bottom:0 }}>
+        <div style={{ background:V("surface-sheet"), borderRadius:"22px 22px 0 0", borderTop:`1px solid ${V("hairline")}`, padding:"0 24px 22px" }}>
+          <div style={{ width:"36px", height:"4px", borderRadius:"2px", background:V("ring"), margin:"10px auto 22px" }} />
+          <div style={{ paddingBottom:"18px", borderBottom:`1px solid ${V("hairline")}` }}>
+            <span style={{ fontFamily:V("font-sans"), fontSize:"17px", fontWeight:300, letterSpacing:"-0.01em", color:V("text-primary") }}>{value}</span>
+            <span style={{ display:"inline-block", width:"2px", height:"20px", background:V("accent"), verticalAlign:"-4px", marginLeft:"2px", animation:"fomo-caret 1s steps(1) infinite" }} />
+          </div>
+          <div style={{ display:"flex", gap:"9px", marginTop:"18px", overflow:"hidden" }}>
+            <Chip label="Due date" icon={<Icon name="calendar" size={13} stroke={V("text-secondary")} />} />
+            <Chip label="Priority" icon={<Icon name="flag" size={13} stroke={V("text-secondary")} />} />
+            <Chip label="Repeat" icon={<Icon name="repeat" size={13} stroke={V("text-secondary")} />} />
+            <Chip label="Note" icon={<Icon name="note" size={13} stroke={V("text-secondary")} />} />
+          </div>
+        </div>
+        <Keyboard />
+      </div>
+    </div>
+  );
+}
+
+/* ===================================================================
+   Documentation page
+   =================================================================== */
+const cssVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+function SecHead({ num, title, sub }) {
+  return (
+    <React.Fragment>
+      <div className="sec-head"><span className="sec-num">{num}</span><h2>{title}</h2></div>
+      {sub && <div className="sec-sub">{sub}</div>}
+    </React.Fragment>
+  );
+}
+
+/* read a token value live from either the dark root or a .theme-light probe */
+function useThemeValue() {
+  const probe = React.useRef(null);
+  const read = (token, light) => {
+    const el = light ? probe.current : document.documentElement;
+    if (!el) return "";
+    return getComputedStyle(el).getPropertyValue(token).trim();
+  };
+  return { probe, read };
+}
+
+function ColorSwatch({ token, name, light, read, big }) {
+  const val = read("--fomo-" + token, light);
+  const border = (val && (val.includes("rgba(255") || val === "#0b0b0a" || val === "#141413" || val === "#1a1a16" || val === "#1c1c1e")) ;
+  return (
+    <div>
+      <div style={{ height: big ? 76 : 60, borderRadius: 8, background: `var(--fomo-${token})`,
+        border: "1px solid " + (light ? "rgba(0,0,0,0.12)" : "rgba(255,255,255,0.1)") }} />
+      <div style={{ marginTop: 9, fontFamily:"ui-monospace,monospace", fontSize: 11, color: light ? "#1a1712" : "#cfccc4" }}>{name}</div>
+      <div style={{ fontFamily:"ui-monospace,monospace", fontSize: 10.5, color: light ? "#837e72" : "#6f6c66", marginTop: 2 }}>{val}</div>
+    </div>
+  );
+}
+
+function ColorGroup({ title, tokens, light, read }) {
+  return (
+    <div>
+      <div className="blocklab" style={{ color: light ? "#837e72" : undefined }}>{title}</div>
+      <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(132px, 1fr))" }}>
+        {tokens.map((t) => <ColorSwatch key={t[0]} token={t[0]} name={t[1]} light={light} read={read} />)}
+      </div>
+    </div>
+  );
+}
+
+function Card({ children, light }) {
+  return (
+    <div className={"preview" + (light ? " light-host" : "")}
+      style={{ background: light ? "#f4f2ec" : "#0d0d0c", padding: 28 }}>{children}</div>
+  );
+}
+
+function ThemedPanel({ title, children, defaultLight=false }) {
+  const [light, setLight] = React.useState(defaultLight);
+  return (
+    <div>
+      <div className="panelhead">
+        <div className="blocklab" style={{ margin: 0 }}>{title}</div>
+        <div className="toggle">
+          <button className={!light ? "on" : ""} onClick={() => setLight(false)}>Dark</button>
+          <button className={light ? "on" : ""} onClick={() => setLight(true)}>Light</button>
+        </div>
+      </div>
+      <div className={light ? "theme-light" : ""}>
+        <Card light={light}>{children}</Card>
+      </div>
+    </div>
+  );
+}
+
+function TypeRow({ label, spec, children }) {
+  return (
+    <div style={{ display:"flex", alignItems:"baseline", gap:24, padding:"18px 0", borderBottom:"1px solid rgba(255,255,255,0.06)" }}>
+      <div style={{ width: 150, flex:"none" }}>
+        <div style={{ fontSize:12, color:"#86837c" }}>{label}</div>
+        <div className="mono" style={{ fontSize:10.5, color:"#6f6c66", marginTop:4 }}>{spec}</div>
+      </div>
+      <div style={{ flex:1, minWidth:0 }}>{children}</div>
+    </div>
+  );
+}
+
+const SEED = [
+  { id:1, name:"Call the pharmacy before it closes", meta:"Today · 6:00 PM", priority:true, flagged:true, note:"Ask whether the new prescription is ready, and if they can hold it at the front counter until tomorrow morning." },
+  { id:2, name:"Sign the apartment lease", meta:"Today", flagged:true },
+  { id:3, name:"Reply to Mara about the weekend", meta:"9:30 AM" },
+  { id:4, name:"Water the olive tree" },
+  { id:5, name:"Finish the last chapter", meta:"Today", priority:true },
+  { id:6, name:"Morning walk", done:true },
+];
+const UPCOMING = [
+  { label:"Tomorrow · Sun 28", tasks:[ {id:11,name:"Dentist appointment",meta:"2:00 PM",priority:true}, {id:12,name:"Return the library books"} ] },
+  { label:"Monday 29", tasks:[ {id:13,name:"Quarterly review prep"} ] },
+  { label:"Tuesday 30", tasks:[ {id:14,name:"Renew passport",meta:"Tue 30",priority:true}, {id:15,name:"Coffee with Theo",meta:"9:00 AM"} ] },
+];
+
+function ScreenFrame({ label, children, light }) {
+  return (
+    <div style={{ flex:"none" }}>
+      <div className="mono" style={{ fontSize:10, letterSpacing:"0.16em", textTransform:"uppercase", color:"#6f6c66", marginBottom:12 }}>{label}</div>
+      <div style={{ width: 390*0.66, height: 844*0.66, overflow:"hidden" }}>
+        <div className={light ? "theme-light" : ""} style={{ transform:"scale(0.66)", transformOrigin:"top left", width:390, height:844 }}>
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  const { probe, read } = useThemeValue();
+  const [, force] = React.useState(0);
+  React.useEffect(() => { force(1); }, []); // re-render once probe is mounted so light reads resolve
+
+  const [chk, setChk] = React.useState(false);
+
+  return (
+    <React.Fragment>
+      {/* hidden probe to read .theme-light token values */}
+      <div ref={probe} className="theme-light" style={{ position:"absolute", width:0, height:0, overflow:"hidden", pointerEvents:"none" }} />
+
+      <div className="wrap">
+        <aside className="side">
+          <div className="brand">F<b>o</b>mo</div>
+          <div className="tag">Design System</div>
+          <nav className="nav">
+            <div className="grouplab">Foundations</div>
+            <a href="#colour">Colour</a>
+            <a href="#type">Typography</a>
+            <a href="#space">Spacing &amp; Radius</a>
+            <a href="#icons">Iconography</a>
+            <div className="grouplab">Components</div>
+            <a href="#checkbox">Checkbox</a>
+            <a href="#chips">Chips</a>
+            <a href="#taskrow">Task row</a>
+            <a href="#nav">Navigation</a>
+            <a href="#headers">Headers</a>
+            <div className="grouplab">Screens</div>
+            <a href="#screens">All screens</a>
+          </nav>
+          <div style={{ marginTop:"auto", paddingTop:30 }}>
+            <a href="ui_kits/fomo/index.html" className="mono" style={{ fontSize:10.5, letterSpacing:"0.1em", color:"#c6a47a" }}>Open interactive kit →</a>
+          </div>
+        </aside>
+
+        <main className="main">
+          <div className="inner">
+            {/* hero */}
+            <div style={{ paddingTop: 0, marginBottom: 8 }}>
+              <Eyebrow>A calm, near-monochrome task manager</Eyebrow>
+              <h1 style={{ fontSize:52, fontWeight:300, letterSpacing:"-0.04em", margin:"18px 0 0", lineHeight:1.05 }}>The Fomo<br/>design system</h1>
+              <p style={{ color:"#86837c", fontSize:15, fontWeight:300, lineHeight:1.7, maxWidth:560, marginTop:22 }}>
+                Dark-first and deliberately quiet — a warm near-black canvas, stark off-white type, generous negative space,
+                and a single warm accent used only where it earns its place. Every token and component below reads live from
+                <span className="mono" style={{ color:"#c6a47a" }}> styles.css</span>.
+              </p>
+            </div>
+            <div className="divider-row" />
+
+            {/* COLOUR */}
+            <section id="colour">
+              <SecHead num="01" title="Colour" sub="Near-monochromatic. Dark is the default theme; a paper theme (.theme-light) inverts the same token names. The accent is the only hue in the whole app — it appears on the priority dot, the flag, the text caret, the completed checkbox, and the keyboard return key. Nothing else." />
+              <ColorGroup title="Dark · surfaces" light={false} read={read} tokens={[["bg","bg"],["surface-sheet","surface-sheet"],["surface-raised","surface-raised"],["keyboard-bg","keyboard-bg"]]} />
+              <div style={{ height: 26 }} />
+              <ColorGroup title="Dark · text ramp" light={false} read={read} tokens={[["text-primary","primary"],["text-secondary","secondary"],["text-muted","muted"],["text-faint","faint"],["text-done","done"]]} />
+              <div style={{ height: 26 }} />
+              <ColorGroup title="Accent &amp; signal" light={false} read={read} tokens={[["accent","accent"],["accent-strong","accent-strong"],["danger","danger"]]} />
+              <div style={{ height: 34 }} />
+              <div className="theme-light">
+                <div style={{ background:"#f4f2ec", borderRadius:14, padding:"26px 28px", border:"1px solid rgba(0,0,0,0.08)" }}>
+                  <ColorGroup title="Paper theme · .theme-light" light={true} read={read} tokens={[["bg","bg"],["surface-raised","raised"],["text-primary","text"],["text-secondary","secondary"],["accent","accent"]]} />
+                </div>
+              </div>
+            </section>
+            <div className="divider-row" />
+
+            {/* TYPE */}
+            <section id="type">
+              <SecHead num="02" title="Typography" sub="System font stack only (San Francisco on Apple platforms). Titles and body are weight 300 with tight negative tracking; metadata is 400. Small uppercase labels switch to a monospace stack with wide tracking — the one editorial flourish." />
+              <TypeRow label="Page title" spec="28 / 300 / −0.025em">
+                <span style={{ fontSize:28, fontWeight:300, letterSpacing:"-0.025em" }}>Today</span>
+              </TypeRow>
+              <TypeRow label="Detail title" spec="23 / 300 / −0.02em">
+                <span style={{ fontSize:23, fontWeight:300, letterSpacing:"-0.02em" }}>Call the pharmacy before it closes</span>
+              </TypeRow>
+              <TypeRow label="Task name" spec="15 / 300 / −0.01em">
+                <span style={{ fontSize:15, fontWeight:300, letterSpacing:"-0.01em" }}>Sign the apartment lease</span>
+              </TypeRow>
+              <TypeRow label="Metadata" spec="13 / 400">
+                <span style={{ fontSize:13, fontWeight:400, color:"#86837c" }}>Today · 6:00 PM</span>
+              </TypeRow>
+              <TypeRow label="Eyebrow / date" spec="mono 11 / 0.20em">
+                <span className="mono" style={{ fontSize:11, letterSpacing:"0.20em", textTransform:"uppercase", color:"#6f6c66" }}>Tomorrow · Sun 28</span>
+              </TypeRow>
+              <TypeRow label="Nav label" spec="11 / 500 / 0.04em">
+                <span style={{ fontSize:11, fontWeight:500, letterSpacing:"0.04em" }}>Upcoming</span>
+              </TypeRow>
+              <TypeRow label="Note body" spec="15 / 300 / 1.6">
+                <span style={{ fontSize:15, fontWeight:300, lineHeight:1.6, color:"#cbc8c2" }}>Ask whether the new prescription is ready, and if they can hold it at the front counter.</span>
+              </TypeRow>
+            </section>
+            <div className="divider-row" />
+
+            {/* SPACING + RADIUS */}
+            <section id="space">
+              <SecHead num="03" title="Spacing & radius" sub="A calm, generous rhythm. 26px screen padding, 14px task-row padding, 46px between the status bar and the page title. Radii are subtle; pills, the FAB and the checkbox are fully round." />
+              <div className="blocklab">Spacing scale</div>
+              <div style={{ display:"flex", gap:18, alignItems:"flex-end", flexWrap:"wrap" }}>
+                {[["4","1"],["8","3"],["14","row"],["18","6"],["22","group"],["26","screen"],["46","header"]].map(([px,nm]) => (
+                  <div key={px} style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                    <div style={{ width: Number(px), height: 14, background:"#c6a47a", borderRadius:3 }} />
+                    <div className="mono" style={{ fontSize:10, color:"#6f6c66" }}>{px} · {nm}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="blocklab" style={{ marginTop: 36 }}>Corner radius</div>
+              <div style={{ display:"flex", gap:22, alignItems:"center", flexWrap:"wrap" }}>
+                {[["4","sm"],["8","md"],["12","lg"],["22","sheet"]].map(([r,nm]) => (
+                  <div key={r} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:8 }}>
+                    <div style={{ width:64, height:48, background:"#1a1a16", border:"1px solid rgba(255,255,255,0.13)", borderRadius:Number(r) }} />
+                    <div className="mono" style={{ fontSize:10, color:"#6f6c66" }}>{nm} · {r}</div>
+                  </div>
+                ))}
+                <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:8 }}>
+                  <div style={{ width:48, height:48, background:"#1a1a16", border:"1px solid rgba(255,255,255,0.13)", borderRadius:"50%" }} />
+                  <div className="mono" style={{ fontSize:10, color:"#6f6c66" }}>full</div>
+                </div>
+              </div>
+            </section>
+            <div className="divider-row" />
+
+            {/* ICONS */}
+            <section id="icons">
+              <SecHead num="04" title="Iconography" sub="One small set of thin-stroke geometric line icons — no icon font, no SVG asset files. Stroke ~1.5 (1.3 on the small glyphs); colour is driven by the stroke prop. The flag and the Today dot fill. No emoji anywhere." />
+              <Card>
+                <div style={{ display:"flex", flexWrap:"wrap", gap:30, alignItems:"center" }}>
+                  {ICON_NAMES.map((n) => (
+                    <div key={n} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:10 }}>
+                      <Icon name={n} size={24} stroke="#eceae6" />
+                      <span className="mono" style={{ fontSize:10, letterSpacing:"0.1em", color:"#6f6c66" }}>{n}</span>
+                    </div>
+                  ))}
+                  <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:10 }}>
+                    <Icon name="flag" size={24} stroke="#c6a47a" />
+                    <span className="mono" style={{ fontSize:10, letterSpacing:"0.1em", color:"#c6a47a" }}>accent</span>
+                  </div>
+                </div>
+              </Card>
+            </section>
+            <div className="divider-row" />
+
+            {/* CHECKBOX */}
+            <section id="checkbox">
+              <SecHead num="05" title="Checkbox" sub="The only selection control. An unfilled ring by default; on completion it fills with the accent and shows a check, while the task label strikes through and dims." />
+              <ThemedPanel title="States">
+                <div style={{ display:"flex", gap:36, alignItems:"center" }}>
+                  <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:12 }}>
+                    <Checkbox checked={false} /><span className="mono" style={{ fontSize:10, color:"var(--fomo-text-muted)" }}>default</span>
+                  </div>
+                  <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:12 }}>
+                    <Checkbox checked={true} /><span className="mono" style={{ fontSize:10, color:"var(--fomo-text-muted)" }}>done</span>
+                  </div>
+                  <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:12 }}>
+                    <Checkbox checked={chk} size={24} onChange={() => setChk((v) => !v)} /><span className="mono" style={{ fontSize:10, color:"var(--fomo-text-muted)" }}>tap me · 24px</span>
+                  </div>
+                </div>
+              </ThemedPanel>
+            </section>
+            <div className="divider-row" />
+
+            {/* CHIPS */}
+            <section id="chips">
+              <SecHead num="06" title="Chips" sub="Pill metadata buttons used in the Add-task sheet and Task Detail. Inactive shows a hairline outline; active is accent-tinted once a value is set." />
+              <ThemedPanel title="Inactive → active">
+                <div style={{ display:"flex", flexWrap:"wrap", gap:10 }}>
+                  <Chip label="Due date" icon={<Icon name="calendar" size={13} stroke="var(--fomo-text-secondary)" />} />
+                  <Chip label="Priority" icon={<Icon name="flag" size={13} stroke="var(--fomo-text-secondary)" />} />
+                  <Chip label="Repeat" icon={<Icon name="repeat" size={13} stroke="var(--fomo-text-secondary)" />} />
+                  <Chip label="Note" icon={<Icon name="note" size={13} stroke="var(--fomo-text-secondary)" />} />
+                  <Chip label="Today · 6:00 PM" active icon={<Icon name="calendar" size={13} stroke="var(--fomo-accent-strong)" />} />
+                  <Chip label="Flagged" active icon={<Icon name="flag" size={13} stroke="var(--fomo-accent-strong)" />} />
+                </div>
+              </ThemedPanel>
+            </section>
+            <div className="divider-row" />
+
+            {/* TASK ROW */}
+            <section id="taskrow">
+              <SecHead num="07" title="Task row" sub="The core list primitive: circular checkbox, task name, an optional priority-dot metadata line, and an optional flag. Flagged tasks float to the top; completed tasks dim and strike through. Rows are separated by hairline dividers." />
+              <ThemedPanel title="Row variants">
+                <div style={{ maxWidth: 360 }}>
+                  <TaskRow name="Call the pharmacy before it closes" meta="Today · 6:00 PM" priority flagged />
+                  <TaskRow name="Reply to Mara about the weekend" meta="9:30 AM" />
+                  <TaskRow name="Water the olive tree" />
+                  <TaskRow name="Morning walk" done divider={false} />
+                </div>
+              </ThemedPanel>
+            </section>
+            <div className="divider-row" />
+
+            {/* NAVIGATION */}
+            <section id="nav">
+              <SecHead num="08" title="Navigation" sub="Status bar, the centered add FAB, and the three-tab bottom bar — Today / Upcoming / All. The active tab uses primary text colour, the rest drop to faint." />
+              <ThemedPanel title="Bottom bar · FAB · status bar">
+                <div style={{ display:"flex", gap:40, alignItems:"center", flexWrap:"wrap" }}>
+                  <div style={{ width:300, borderRadius:20, overflow:"hidden", border:"1px solid var(--fomo-screen-border)", background:"var(--fomo-bg)" }}>
+                    <StatusBar />
+                    <div style={{ height: 30 }} />
+                    <BottomNav active="today" />
+                  </div>
+                  <FAB />
+                </div>
+              </ThemedPanel>
+            </section>
+            <div className="divider-row" />
+
+            {/* HEADERS */}
+            <section id="headers">
+              <SecHead num="09" title="Headers" sub="Every view opens with a monospace eyebrow over a weight-300 page title." />
+              <ThemedPanel title="Eyebrow + page title">
+                <div style={{ display:"flex", gap:70, flexWrap:"wrap" }}>
+                  <div><Eyebrow>Sat · 27 June</Eyebrow><div style={{height:8}}/><PageTitle>Today</PageTitle></div>
+                  <div><Eyebrow>Next 7 days</Eyebrow><div style={{height:8}}/><PageTitle>Upcoming</PageTitle></div>
+                </div>
+              </ThemedPanel>
+            </section>
+            <div className="divider-row" />
+
+            {/* SCREENS */}
+            <section id="screens">
+              <SecHead num="10" title="Screens" sub="The five composed screens, assembled from the primitives above. Toggle the theme to see the paper variant." />
+              <ScreensGallery />
+            </section>
+
+            <div style={{ marginTop: 80, paddingTop: 30, borderTop:"1px solid rgba(255,255,255,0.06)", display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:16 }}>
+              <span className="mono" style={{ fontSize:10.5, letterSpacing:"0.14em", color:"#4f4d48" }}>FOMO · DESIGN SYSTEM</span>
+              <a href="ui_kits/fomo/index.html" className="mono" style={{ fontSize:10.5, letterSpacing:"0.1em", color:"#c6a47a" }}>Open the interactive kit →</a>
+            </div>
+          </div>
+        </main>
+      </div>
+    </React.Fragment>
+  );
+}
+
+function ScreensGallery() {
+  const [light, setLight] = React.useState(false);
+  const detail = SEED[0];
+  return (
+    <div>
+      <div className="panelhead">
+        <div className="blocklab" style={{ margin: 0 }}>Theme</div>
+        <div className="toggle">
+          <button className={!light ? "on" : ""} onClick={() => setLight(false)}>Dark</button>
+          <button className={light ? "on" : ""} onClick={() => setLight(true)}>Light</button>
+        </div>
+      </div>
+      <div style={{ display:"flex", gap:34, flexWrap:"wrap", padding:"20px 28px", borderRadius:14,
+        border:"1px solid " + (light ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.07)"),
+        background: light ? "#e9e6df" : "#080807" }}>
+        <ScreenFrame label="Today" light={light}><AppShell view="today"><ListScreen eyebrow="Sat · 27 June" title="Today" tasks={SEED} /></AppShell></ScreenFrame>
+        <ScreenFrame label="Add task" light={light}><AppShell view="today"><ListScreen eyebrow="Sat · 27 June" title="Today" tasks={SEED} /><AddTaskSheet /></AppShell></ScreenFrame>
+        <ScreenFrame label="Upcoming" light={light}><AppShell view="upcoming"><UpcomingScreen groups={UPCOMING} /></AppShell></ScreenFrame>
+        <ScreenFrame label="Task detail" light={light}><AppShell chrome={false}><TaskDetail task={detail} /></AppShell></ScreenFrame>
+        <ScreenFrame label="Empty state" light={light}><AppShell view="today"><EmptyState /></AppShell></ScreenFrame>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+<script>
+  (function () {
+    var src = document.getElementById("ds-src").textContent;
+    var out = Babel.transform(src, { presets: ["react-classic"] }).code;
+    (0, eval)(out);
+  })();
+</script>
+</body>
+</html>

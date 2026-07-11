@@ -1,0 +1,19 @@
+/* ── Fomo spacing scale ──────────────────────────────────────────────
+   Calm, generous rhythm. Key applied values:
+   screen padding 26 · row padding 14 · checkbox gap 14 · header offset 46 */
+
+:root {
+  --fomo-space-1:   4px;
+  --fomo-space-2:   6px;
+  --fomo-space-3:   8px;
+  --fomo-space-4:  12px;
+  --fomo-space-5:  14px;  /* task row vertical padding, checkbox→text gap */
+  --fomo-space-6:  18px;
+  --fomo-space-7:  22px;  /* gap between date groups */
+  --fomo-space-8:  26px;  /* screen horizontal padding */
+  --fomo-space-9:  46px;  /* header offset below status bar */
+
+  --fomo-screen-pad:  26px;
+  --fomo-row-pad:     14px;
+  --fomo-header-top:  46px;
+}

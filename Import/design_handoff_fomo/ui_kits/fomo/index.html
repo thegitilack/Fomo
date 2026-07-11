@@ -1,0 +1,394 @@
+<!-- @dsCard group="Fomo" viewport="470x880" subtitle="Interactive task app — tap rows, add tasks, switch views & theme" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fomo — UI kit</title>
+<link rel="stylesheet" href="../../styles.css" />
+<style>
+  html, body { margin: 0; }
+  body {
+    background: #232220;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    padding: 40px 0 60px;
+    font-family: var(--fomo-font-sans);
+  }
+  @keyframes fomo-caret { 0%,50% { opacity: 1 } 51%,100% { opacity: 0 } }
+  .toggle { display: inline-flex; gap: 4px; padding: 4px; background: rgba(255,255,255,0.06); border-radius: 999px; }
+  .toggle button { border: none; background: none; cursor: pointer; font-family: var(--fomo-font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #b6b2a8; padding: 7px 16px; border-radius: 999px; }
+  .toggle button.on { background: #f4f2ec; color: #1a1712; }
+  .hint { font-family: var(--fomo-font-mono); font-size: 10px; letter-spacing: 0.1em; color: #6f6c66; }
+</style>
+</head>
+<body>
+<div class="toggle" id="themeToggle">
+  <button data-t="dark" class="on">Dark</button>
+  <button data-t="light">Light</button>
+</div>
+<div id="root"></div>
+<div class="hint">Tap a row to open · + to add · switch Today / Upcoming / All below</div>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script>
+  // Force the classic JSX runtime so Babel emits React.createElement (React is a global)
+  // instead of injecting an unresolvable `import "react/jsx-runtime"`.
+  Babel.registerPreset("react-classic", {
+    presets: [[Babel.availablePresets["react"], { runtime: "classic" }]],
+  });
+</script>
+<script type="text/plain" id="fomo-src">
+/* This preview inlines the design-system components so it renders standalone.
+   The canonical, reusable source for each lives in:
+     components/icons/Icon.jsx, components/inputs/{Checkbox,Chip}.jsx,
+     components/task/TaskRow.jsx, components/navigation/{FAB,BottomNav,StatusBar}.jsx,
+     components/typography/{Eyebrow,PageTitle}.jsx,
+     ui_kits/fomo/{AppShell,ListScreen,UpcomingScreen,EmptyState,TaskDetail,AddTaskSheet,Keyboard}.jsx
+   They read the same --fomo-* tokens from styles.css. */
+
+const V = (n) => `var(--fomo-${n})`;
+
+/* ---------- Icon ---------- */
+const ICONS = {
+  today:   { vb:"0 0 24 24", el:(c,s)=>[<circle key="r" cx="12" cy="12" r="6.5" stroke={c} strokeWidth={s} fill="none"/>,<circle key="d" cx="12" cy="12" r="1.7" fill={c}/>] },
+  chevron: { vb:"0 0 24 24", el:(c,s)=>[<path key="p" d="M9 6l6 6-6 6" stroke={c} strokeWidth={s} strokeLinecap="round" strokeLinejoin="round" fill="none"/>] },
+  list:    { vb:"0 0 24 24", el:(c,s)=>[<path key="p" d="M5 8h14M5 12h14M5 16h10" stroke={c} strokeWidth={s} strokeLinecap="round"/>] },
+  plus:    { vb:"0 0 24 24", el:(c,s)=>[<path key="p" d="M12 5v14M5 12h14" stroke={c} strokeWidth={s} strokeLinecap="round"/>] },
+  back:    { vb:"0 0 24 24", el:(c,s)=>[<path key="p" d="M15 5l-7 7 7 7" stroke={c} strokeWidth={s} strokeLinecap="round" strokeLinejoin="round" fill="none"/>] },
+  check:   { vb:"0 0 12 12", el:(c,s)=>[<path key="p" d="M2.5 6.2l2.3 2.3 4.7-5" stroke={c} strokeWidth={s} strokeLinecap="round" strokeLinejoin="round" fill="none"/>] },
+  flag:    { vb:"0 0 12 14", el:(c,s)=>[<path key="a" d="M2 1v12" stroke={c} strokeWidth={s} strokeLinecap="round"/>,<path key="b" d="M2.4 1.6l7.6 2.1-7.6 2.1z" fill={c} fillOpacity="0.9"/>] },
+  calendar:{ vb:"0 0 14 14", el:(c,s)=>[<rect key="b" x="1.5" y="2.5" width="11" height="10" rx="2" stroke={c} strokeWidth={s} fill="none"/>,<path key="l" d="M1.5 5.5h11M4.5 1v2M9.5 1v2" stroke={c} strokeWidth={s} strokeLinecap="round"/>] },
+  repeat:  { vb:"0 0 14 14", el:(c,s)=>[<path key="a" d="M2 7a5 5 0 1 1 1.5 3.6" stroke={c} strokeWidth={s} strokeLinecap="round" fill="none"/>,<path key="h" d="M2 11V7.5h3.5" stroke={c} strokeWidth={s} strokeLinecap="round" strokeLinejoin="round" fill="none"/>] },
+  note:    { vb:"0 0 14 14", el:(c,s)=>[<path key="p" d="M3 3.5h8M3 7h8M3 10.5h5" stroke={c} strokeWidth={s} strokeLinecap="round"/>] },
+};
+function Icon({ name, size=22, stroke="currentColor", strokeWidth, style }) {
+  const ic = ICONS[name]; if (!ic) return null;
+  const sw = strokeWidth ?? (ic.vb.endsWith("12") || ic.vb.endsWith("14") ? 1.3 : 1.5);
+  return <svg width={size} height={size} viewBox={ic.vb} fill="none" style={{ display:"block", flex:"none", ...style }}>{ic.el(stroke, sw)}</svg>;
+}
+
+/* ---------- Checkbox ---------- */
+function Checkbox({ checked=false, size=20, onChange }) {
+  const px = size + "px";
+  return (
+    <button type="button" aria-pressed={checked} onClick={onChange}
+      style={{ width:px, height:px, flex:"none", padding:0, margin:0, cursor:"pointer", borderRadius:"50%",
+        background: checked ? V("accent") : "transparent",
+        border: `1.5px solid ${checked ? V("accent") : V("ring")}`,
+        display:"flex", alignItems:"center", justifyContent:"center", transition:"background 150ms ease, border-color 150ms ease" }}>
+      {checked && <Icon name="check" size={size*0.55} stroke={V("bg")} strokeWidth={1.6} />}
+    </button>
+  );
+}
+
+/* ---------- Chip ---------- */
+function Chip({ label, icon, active=false, onClick }) {
+  return (
+    <button type="button" onClick={onClick}
+      style={{ display:"inline-flex", alignItems:"center", gap:"7px", padding:"9px 14px", borderRadius:V("radius-full"),
+        border:`1px solid ${active ? V("chip-active-bd") : V("border")}`,
+        background: active ? V("chip-active-bg") : "transparent",
+        color: active ? V("accent-strong") : V("text-secondary"),
+        fontFamily:V("font-sans"), fontSize:"13px", fontWeight:400, cursor:"pointer", whiteSpace:"nowrap" }}>
+      {icon}<span>{label}</span>
+    </button>
+  );
+}
+
+/* ---------- TaskRow ---------- */
+function TaskRow({ name, meta, priority=false, flagged=false, done=false, onToggle, onOpen, divider=true }) {
+  return (
+    <div style={{ display:"flex", alignItems:"flex-start", gap:"14px", padding:"14px 0", borderBottom: divider ? `1px solid ${V("divider")}` : "none" }}>
+      <Checkbox checked={done} onChange={onToggle} />
+      <div onClick={onOpen} style={{ flex:1, minWidth:0, cursor: onOpen ? "pointer" : "default" }}>
+        <div style={{ fontFamily:V("font-sans"), fontSize:"15px", fontWeight:300, letterSpacing:"-0.01em", lineHeight:1.35,
+          color: done ? V("text-done") : V("text-primary"), textDecoration: done ? "line-through" : "none", textDecorationColor:V("ring") }}>{name}</div>
+        {meta && (
+          <div style={{ display:"flex", alignItems:"center", gap:"8px", marginTop:"6px" }}>
+            {priority && <span style={{ width:"5px", height:"5px", borderRadius:"50%", background:V("accent"), flex:"none" }} />}
+            <span style={{ fontSize:"13px", fontWeight:400, color:V("text-secondary") }}>{meta}</span>
+          </div>
+        )}
+      </div>
+      {flagged && <div style={{ marginTop:"2px" }}><Icon name="flag" size={14} stroke={V("accent")} /></div>}
+    </div>
+  );
+}
+
+/* ---------- FAB / BottomNav / StatusBar ---------- */
+function FAB({ onClick, size=58 }) {
+  return (
+    <button type="button" aria-label="Add task" onClick={onClick}
+      style={{ width:size, height:size, borderRadius:"50%", background:V("surface-raised"), border:`1px solid ${V("border")}`,
+        boxShadow:V("shadow-fab"), cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", padding:0 }}>
+      <span style={{ position:"relative", width:"20px", height:"20px", display:"block" }}>
+        <span style={{ position:"absolute", left:"50%", top:0, transform:"translateX(-50%)", width:"1.5px", height:"20px", background:V("text-primary") }} />
+        <span style={{ position:"absolute", top:"50%", left:0, transform:"translateY(-50%)", height:"1.5px", width:"20px", background:V("text-primary") }} />
+      </span>
+    </button>
+  );
+}
+const TABS = [ {id:"today",label:"Today",icon:"today"}, {id:"upcoming",label:"Upcoming",icon:"chevron"}, {id:"all",label:"All",icon:"list"} ];
+function BottomNav({ active="today", onChange }) {
+  return (
+    <nav style={{ height:"88px", background:V("nav-bg"), backdropFilter:"blur(20px)", WebkitBackdropFilter:"blur(20px)",
+      borderTop:`1px solid ${V("nav-border")}`, display:"flex", alignItems:"flex-start", justifyContent:"space-around", paddingTop:"13px" }}>
+      {TABS.map((t) => {
+        const on = t.id === active;
+        const color = on ? V("text-primary") : V("text-faint");
+        return (
+          <button key={t.id} type="button" onClick={() => onChange && onChange(t.id)}
+            style={{ background:"none", border:"none", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:"6px", padding:0 }}>
+            <Icon name={t.icon} size={22} stroke={color} />
+            <span style={{ fontFamily:V("font-sans"), fontSize:"11px", fontWeight:500, letterSpacing:"0.04em", color }}>{t.label}</span>
+          </button>
+        );
+      })}
+    </nav>
+  );
+}
+function StatusBar({ time="22:01", battery=41 }) {
+  const pct = Math.max(4, Math.min(100, battery));
+  return (
+    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"18px 30px 0" }}>
+      <span style={{ fontFamily:V("font-sans"), fontSize:"16px", fontWeight:600, letterSpacing:"-0.01em", color:V("text-primary") }}>{time}</span>
+      <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
+        <div style={{ display:"flex", alignItems:"flex-end", gap:"2px", height:"11px" }}>
+          {[4,6,8,11].map((h,i) => <span key={i} style={{ width:"3px", height:h+"px", background:V("text-primary"), borderRadius:"1px" }} />)}
+        </div>
+        <span style={{ fontFamily:V("font-sans"), fontSize:"13px", fontWeight:600, color:V("text-primary") }}>{battery}</span>
+        <div style={{ width:"24px", height:"12px", border:`1px solid ${V("ring")}`, borderRadius:"3px", position:"relative", padding:"1.5px" }}>
+          <div style={{ width:pct+"%", height:"100%", background:V("text-primary"), borderRadius:"1px" }} />
+          <span style={{ position:"absolute", right:"-3px", top:"3.5px", width:"2px", height:"5px", background:V("ring"), borderRadius:"0 1px 1px 0" }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- typography ---------- */
+function Eyebrow({ children, style }) {
+  return <div style={{ fontFamily:V("font-mono"), fontSize:"11px", letterSpacing:"0.20em", textTransform:"uppercase", color:V("text-muted"), ...style }}>{children}</div>;
+}
+function PageTitle({ children, style }) {
+  return <div style={{ fontFamily:V("font-sans"), fontSize:"28px", fontWeight:300, letterSpacing:"-0.025em", color:V("text-primary"), ...style }}>{children}</div>;
+}
+
+/* ---------- screens ---------- */
+function AppShell({ children, chrome=true, view="today", onView, onAdd }) {
+  return (
+    <div style={{ position:"relative", width:"390px", height:"844px", background:V("bg"), borderRadius:"46px",
+      border:`1px solid ${V("screen-border")}`, overflow:"hidden", boxShadow:V("shadow-screen"), fontFamily:V("font-sans") }}>
+      <StatusBar />
+      {children}
+      {chrome && (
+        <React.Fragment>
+          <div style={{ position:"absolute", bottom:"106px", left:"50%", transform:"translateX(-50%)" }}><FAB onClick={onAdd} /></div>
+          <div style={{ position:"absolute", left:0, right:0, bottom:0 }}><BottomNav active={view} onChange={onView} /></div>
+          <div style={{ position:"absolute", bottom:"9px", left:"50%", transform:"translateX(-50%)", width:"134px", height:"5px", borderRadius:"3px", background:V("home-indicator") }} />
+        </React.Fragment>
+      )}
+    </div>
+  );
+}
+function ListScreen({ eyebrow, title, tasks, onToggle, onOpen }) {
+  const sorted = [...tasks].sort((a,b) => (b.flagged?1:0) - (a.flagged?1:0));
+  return (
+    <div>
+      <div style={{ padding:"46px 26px 0" }}><Eyebrow>{eyebrow}</Eyebrow><div style={{height:"8px"}}/><PageTitle>{title}</PageTitle></div>
+      <div style={{ padding:"30px 26px 0" }}>
+        {sorted.map((t,i) => <TaskRow key={t.id} {...t} divider={i<sorted.length-1} onToggle={() => onToggle(t.id)} onOpen={() => onOpen(t.id)} />)}
+      </div>
+    </div>
+  );
+}
+function UpcomingScreen({ groups, onToggle, onOpen }) {
+  return (
+    <div>
+      <div style={{ padding:"46px 26px 0" }}><Eyebrow>Next 7 days</Eyebrow><div style={{height:"8px"}}/><PageTitle>Upcoming</PageTitle></div>
+      <div style={{ padding:"24px 26px 0" }}>
+        {groups.map((g,gi) => (
+          <div key={gi}>
+            <div style={{ fontFamily:V("font-mono"), fontSize:"11px", letterSpacing:"0.18em", textTransform:"uppercase", color:V("text-muted"), padding: gi===0 ? "14px 0 4px" : "22px 0 4px" }}>{g.label}</div>
+            {g.tasks.map((t,i) => <TaskRow key={t.id} {...t} divider={i<g.tasks.length-1} onToggle={() => onToggle(t.id)} onOpen={() => onOpen(t.id)} />)}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+function EmptyState({ eyebrow="Sat · 27 June", title="Today" }) {
+  return (
+    <div>
+      <div style={{ padding:"46px 26px 0" }}><Eyebrow>{eyebrow}</Eyebrow><div style={{height:"8px"}}/><PageTitle>{title}</PageTitle></div>
+      <div style={{ padding:"0 26px", position:"absolute", top:"340px" }}>
+        <div style={{ fontFamily:V("font-sans"), fontSize:"19px", fontWeight:300, letterSpacing:"-0.01em", lineHeight:1.5, color:V("text-primary"), opacity:0.85 }}>Nothing due today.</div>
+        <div style={{ fontFamily:V("font-sans"), fontSize:"15px", fontWeight:300, lineHeight:1.5, color:V("text-muted"), marginTop:"10px" }}>A good day to rest. Add something only if it matters.</div>
+      </div>
+    </div>
+  );
+}
+function TaskDetail({ task, onBack, onToggle, onDelete }) {
+  const t = task || {};
+  return (
+    <div>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"14px 22px 0" }}>
+        <button onClick={onBack} style={{ background:"none", border:"none", cursor:"pointer", padding:0 }}><Icon name="back" size={24} stroke={V("text-primary")} /></button>
+        <Icon name="flag" size={16} stroke={V("accent")} />
+      </div>
+      <div style={{ display:"flex", gap:"16px", alignItems:"flex-start", padding:"0 26px", marginTop:"26px" }}>
+        <div style={{ marginTop:"4px" }}><Checkbox checked={!!t.done} size={24} onChange={onToggle} /></div>
+        <div style={{ fontFamily:V("font-sans"), fontSize:"23px", fontWeight:300, letterSpacing:"-0.02em", lineHeight:1.3,
+          color: t.done ? V("text-done") : V("text-primary"), textDecoration: t.done ? "line-through" : "none", textDecorationColor:V("ring") }}>{t.name}</div>
+      </div>
+      <div style={{ display:"flex", flexWrap:"wrap", gap:"9px", padding:"0 26px", marginTop:"28px" }}>
+        <Chip label={t.meta || "Today · 6:00 PM"} active icon={<Icon name="calendar" size={13} stroke={V("accent-strong")} />} />
+        <Chip label="Flagged" active icon={<Icon name="flag" size={13} stroke={V("accent-strong")} />} />
+        <Chip label="Repeat" icon={<Icon name="repeat" size={13} stroke={V("text-secondary")} />} />
+      </div>
+      <div style={{ margin:"26px 26px 0", borderRadius:"12px", background:V("note-fill"), border:`1px solid ${V("hairline")}`, padding:"16px" }}>
+        <div style={{ fontFamily:V("font-mono"), fontSize:"11px", letterSpacing:"0.16em", textTransform:"uppercase", color:V("text-muted"), marginBottom:"12px" }}>Note</div>
+        <div style={{ fontFamily:V("font-sans"), fontSize:"15px", fontWeight:300, lineHeight:1.6, color:V("text-primary"), opacity:0.85 }}>{t.note || "Ask whether the new prescription is ready, and if they can hold it at the front counter until tomorrow morning."}</div>
+      </div>
+      <div style={{ position:"absolute", bottom:"40px", left:"26px" }}>
+        <button onClick={onDelete} style={{ background:"none", border:"none", cursor:"pointer", padding:0, fontFamily:V("font-sans"), fontSize:"15px", fontWeight:300, color:V("danger") }}>Delete task</button>
+      </div>
+      <div style={{ position:"absolute", bottom:"9px", left:"50%", transform:"translateX(-50%)", width:"134px", height:"5px", borderRadius:"3px", background:V("home-indicator") }} />
+    </div>
+  );
+}
+
+/* ---------- keyboard + add sheet ---------- */
+const R1 = "QWERTYUIOP".split(""), R2 = "ASDFGHJKL".split(""), R3 = "ZXCVBNM".split("");
+function Key({ children, flex=1, special, accent, wide, onClick }) {
+  return (
+    <button type="button" onClick={onClick}
+      style={{ flex, height:"42px", border:"none", borderRadius:"5px",
+        background: accent ? V("accent") : special ? V("key-special") : V("key"),
+        color: accent ? V("on-accent") : V("text-primary"), fontFamily:V("font-sans"),
+        fontSize: wide ? "14px" : "18px", fontWeight: accent ? 500 : 400, cursor:"pointer",
+        boxShadow: accent ? "none" : V("shadow-key"), display:"flex", alignItems:"center", justifyContent:"center" }}>{children}</button>
+  );
+}
+function Keyboard({ onKey, onBackspace, onReturn }) {
+  const k = (s) => () => onKey && onKey(s);
+  return (
+    <div style={{ background:V("keyboard-bg"), padding:"8px 3px 4px" }}>
+      <div style={{ display:"flex", gap:"6px", padding:"0 3px", marginBottom:"8px" }}>{R1.map((c) => <Key key={c} onClick={k(c.toLowerCase())}>{c}</Key>)}</div>
+      <div style={{ display:"flex", gap:"6px", padding:"0 22px", marginBottom:"8px" }}>{R2.map((c) => <Key key={c} onClick={k(c.toLowerCase())}>{c}</Key>)}</div>
+      <div style={{ display:"flex", gap:"6px", padding:"0 3px", marginBottom:"8px" }}>
+        <Key flex={1.5} special>⇧</Key>
+        {R3.map((c) => <Key key={c} onClick={k(c.toLowerCase())}>{c}</Key>)}
+        <Key flex={1.5} special onClick={onBackspace}>⌫</Key>
+      </div>
+      <div style={{ display:"flex", gap:"6px", padding:"0 3px" }}>
+        <Key flex={1.6} special wide>123</Key>
+        <Key flex={5} wide onClick={k(" ")}>space</Key>
+        <Key flex={2.4} wide accent onClick={onReturn}>return</Key>
+      </div>
+      <div style={{ position:"relative", height:"18px" }}>
+        <div style={{ position:"absolute", bottom:"1px", left:"50%", transform:"translateX(-50%)", width:"134px", height:"5px", borderRadius:"3px", background:V("home-indicator") }} />
+      </div>
+    </div>
+  );
+}
+function AddTaskSheet({ value="", onKey, onBackspace, onClose, onSubmit }) {
+  return (
+    <div style={{ position:"absolute", inset:0, zIndex:5 }}>
+      <div onClick={onClose} style={{ position:"absolute", inset:0, background:V("scrim") }} />
+      <div style={{ position:"absolute", left:0, right:0, bottom:0 }}>
+        <div style={{ background:V("surface-sheet"), borderRadius:"22px 22px 0 0", borderTop:`1px solid ${V("hairline")}`, padding:"0 24px 22px" }}>
+          <div style={{ width:"36px", height:"4px", borderRadius:"2px", background:V("ring"), margin:"10px auto 22px" }} />
+          <div style={{ paddingBottom:"18px", borderBottom:`1px solid ${V("hairline")}` }}>
+            <span style={{ fontFamily:V("font-sans"), fontSize:"17px", fontWeight:300, letterSpacing:"-0.01em", color: value ? V("text-primary") : V("text-muted") }}>{value || "Task name"}</span>
+            <span style={{ display:"inline-block", width:"2px", height:"20px", background:V("accent"), verticalAlign:"-4px", marginLeft:"2px", animation:"fomo-caret 1s steps(1) infinite" }} />
+          </div>
+          <div style={{ display:"flex", gap:"9px", marginTop:"18px", overflow:"hidden" }}>
+            <Chip label="Due date" icon={<Icon name="calendar" size={13} stroke={V("text-secondary")} />} />
+            <Chip label="Priority" icon={<Icon name="flag" size={13} stroke={V("text-secondary")} />} />
+            <Chip label="Repeat" icon={<Icon name="repeat" size={13} stroke={V("text-secondary")} />} />
+            <Chip label="Note" icon={<Icon name="note" size={13} stroke={V("text-secondary")} />} />
+          </div>
+        </div>
+        <Keyboard onKey={onKey} onBackspace={onBackspace} onReturn={onSubmit} />
+      </div>
+    </div>
+  );
+}
+
+/* ---------- data + app ---------- */
+const SEED = [
+  { id:1, name:"Call the pharmacy before it closes", meta:"Today · 6:00 PM", priority:true, flagged:true,
+    note:"Ask whether the new prescription is ready, and if they can hold it at the front counter until tomorrow morning." },
+  { id:2, name:"Sign the apartment lease", meta:"Today", flagged:true },
+  { id:3, name:"Reply to Mara about the weekend", meta:"9:30 AM" },
+  { id:4, name:"Water the olive tree" },
+  { id:5, name:"Finish the last chapter", meta:"Today", priority:true },
+  { id:6, name:"Morning walk", done:true },
+];
+const UPCOMING = [
+  { label:"Tomorrow · Sun 28", tasks:[ {id:11,name:"Dentist appointment",meta:"2:00 PM",priority:true}, {id:12,name:"Return the library books"} ] },
+  { label:"Monday 29", tasks:[ {id:13,name:"Quarterly review prep"} ] },
+  { label:"Tuesday 30", tasks:[ {id:14,name:"Renew passport",meta:"Tue 30",priority:true}, {id:15,name:"Coffee with Theo",meta:"9:00 AM"} ] },
+];
+
+function App() {
+  const [theme, setTheme] = React.useState("dark");
+  const [view, setView] = React.useState("today");
+  const [tasks, setTasks] = React.useState(SEED);
+  const [detailId, setDetailId] = React.useState(null);
+  const [addOpen, setAddOpen] = React.useState(false);
+  const [draft, setDraft] = React.useState("");
+
+  React.useEffect(() => {
+    const tg = document.getElementById("themeToggle");
+    const handler = (e) => {
+      const b = e.target.closest("button[data-t]"); if (!b) return;
+      setTheme(b.dataset.t);
+      tg.querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b));
+    };
+    tg.addEventListener("click", handler);
+    return () => tg.removeEventListener("click", handler);
+  }, []);
+
+  const toggle = (id) => setTasks((ts) => ts.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
+  const remove = (id) => { setTasks((ts) => ts.filter((t) => t.id !== id)); setDetailId(null); };
+  const open = (id) => setDetailId(id);
+  const submit = () => { const name = draft.trim(); if (name) setTasks((ts) => [{ id: Date.now(), name }, ...ts]); setDraft(""); setAddOpen(false); };
+
+  const detailTask = tasks.find((t) => t.id === detailId);
+  let content;
+  if (detailTask) {
+    content = <AppShell chrome={false}><TaskDetail task={detailTask} onBack={() => setDetailId(null)} onToggle={() => toggle(detailTask.id)} onDelete={() => remove(detailTask.id)} /></AppShell>;
+  } else {
+    let screen;
+    if (view === "today") screen = tasks.length === 0 ? <EmptyState /> : <ListScreen eyebrow="Sat · 27 June" title="Today" tasks={tasks} onToggle={toggle} onOpen={open} />;
+    else if (view === "upcoming") screen = <UpcomingScreen groups={UPCOMING} onToggle={() => {}} onOpen={() => {}} />;
+    else screen = <ListScreen eyebrow="Everything" title="All" tasks={tasks} onToggle={toggle} onOpen={open} />;
+    content = (
+      <AppShell view={view} onView={setView} onAdd={() => setAddOpen(true)}>
+        {screen}
+        {addOpen && <AddTaskSheet value={draft} onKey={(c) => setDraft((d) => d + c)} onBackspace={() => setDraft((d) => d.slice(0, -1))} onClose={() => { setAddOpen(false); setDraft(""); }} onSubmit={submit} />}
+      </AppShell>
+    );
+  }
+  return <div className={theme === "light" ? "theme-light" : ""}>{content}</div>;
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+<script>
+  (function () {
+    var src = document.getElementById("fomo-src").textContent;
+    var out = Babel.transform(src, { presets: ["react-classic"] }).code;
+    (0, eval)(out);
+  })();
+</script>
+</body>
+</html>

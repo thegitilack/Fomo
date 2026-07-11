@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { Chip } from '../components/Chip'
 import { Icon } from '../components/Icon'
 import { Keyboard } from './Keyboard'
@@ -12,11 +12,17 @@ interface AddTaskSheetProps {
   onSubmit: (task: NewTask) => void
 }
 
-function openPicker(el: HTMLInputElement | null) {
-  if (!el) return
-  const anyEl = el as unknown as { showPicker?: () => void }
-  if (typeof anyEl.showPicker === 'function') anyEl.showPicker()
-  else el.focus()
+const overlayInput: React.CSSProperties = {
+  position: 'absolute',
+  inset: 0,
+  width: '100%',
+  height: '100%',
+  opacity: 0,
+  border: 0,
+  padding: 0,
+  margin: 0,
+  cursor: 'pointer',
+  colorScheme: 'dark',
 }
 
 export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
@@ -25,8 +31,6 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
   const [dueTime, setDueTime] = useState<string | undefined>()
   const [priority, setPriority] = useState(false)
   const [repeat, setRepeat] = useState<Repeat>('none')
-  const dateRef = useRef<HTMLInputElement>(null)
-  const timeRef = useRef<HTMLInputElement>(null)
 
   function handleKey(char: string) { setValue(v => v + char) }
   function handleBackspace() { setValue(v => v.slice(0, -1)) }
@@ -90,19 +94,37 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
 
           {/* Chip row */}
           <div style={{ display: 'flex', gap: '9px', marginTop: '18px', overflowX: 'auto' }}>
-            <Chip
-              label={dueDate ? (formatMeta(dueDate) ?? 'Due date') : 'Due date'}
-              active={!!dueDate}
-              icon={<Icon name="calendar" size={13} stroke={dateStroke} />}
-              onClick={() => openPicker(dateRef.current)}
-            />
-            {dueDate && (
+            <span style={{ position: 'relative', display: 'inline-flex', flex: 'none' }}>
               <Chip
-                label={dueTime ? (formatMeta(undefined, dueTime) ?? 'Time') : 'Add time'}
-                active={!!dueTime}
-                onClick={() => openPicker(timeRef.current)}
+                label={dueDate ? (formatMeta(dueDate) ?? 'Due date') : 'Due date'}
+                active={!!dueDate}
+                icon={<Icon name="calendar" size={13} stroke={dateStroke} />}
               />
+              <input
+                type="date"
+                aria-label="Due date"
+                value={dueDate ?? ''}
+                onChange={e => setDueDate(e.target.value || undefined)}
+                style={overlayInput}
+              />
+            </span>
+
+            {dueDate && (
+              <span style={{ position: 'relative', display: 'inline-flex', flex: 'none' }}>
+                <Chip
+                  label={dueTime ? (formatMeta(undefined, dueTime) ?? 'Time') : 'Add time'}
+                  active={!!dueTime}
+                />
+                <input
+                  type="time"
+                  aria-label="Due time"
+                  value={dueTime ?? ''}
+                  onChange={e => { setDueTime(e.target.value || undefined); if (e.target.value) void ensurePermission() }}
+                  style={overlayInput}
+                />
+              </span>
             )}
+
             <Chip
               label="Priority"
               active={priority}
@@ -116,26 +138,6 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
               onClick={cycleRepeat}
             />
           </div>
-
-          {/* Hidden native pickers (real date/time UI on mobile) */}
-          <input
-            ref={dateRef}
-            type="date"
-            value={dueDate ?? ''}
-            onChange={e => setDueDate(e.target.value || undefined)}
-            style={{ position: 'absolute', opacity: 0, width: 1, height: 1, border: 0, pointerEvents: 'none' }}
-            tabIndex={-1}
-            aria-hidden
-          />
-          <input
-            ref={timeRef}
-            type="time"
-            value={dueTime ?? ''}
-            onChange={e => { setDueTime(e.target.value || undefined); if (e.target.value) void ensurePermission() }}
-            style={{ position: 'absolute', opacity: 0, width: 1, height: 1, border: 0, pointerEvents: 'none' }}
-            tabIndex={-1}
-            aria-hidden
-          />
         </div>
 
         <Keyboard onKey={handleKey} onBackspace={handleBackspace} onReturn={handleReturn} />

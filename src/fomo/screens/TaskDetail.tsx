@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import type { Task, Repeat } from '../state/store'
 import { formatMeta, repeatLabel } from '../state/store'
 import { ensurePermission } from '../state/reminders'
@@ -18,11 +18,17 @@ interface TaskDetailProps {
   onUpdate: (patch: Partial<Task>) => void
 }
 
-function openPicker(el: HTMLInputElement | null) {
-  if (!el) return
-  const anyEl = el as unknown as { showPicker?: () => void }
-  if (typeof anyEl.showPicker === 'function') anyEl.showPicker()
-  else el.focus()
+const overlayInput: React.CSSProperties = {
+  position: 'absolute',
+  inset: 0,
+  width: '100%',
+  height: '100%',
+  opacity: 0,
+  border: 0,
+  padding: 0,
+  margin: 0,
+  cursor: 'pointer',
+  colorScheme: 'dark',
 }
 
 export function TaskDetail({ task, onBack, onToggleDone, onToggleFlag, onDelete, onUpdateNote, onUpdate }: TaskDetailProps) {
@@ -30,8 +36,6 @@ export function TaskDetail({ task, onBack, onToggleDone, onToggleFlag, onDelete,
   const [noteValue, setNoteValue] = useState(task.note ?? '')
   const [editingTitle, setEditingTitle] = useState(false)
   const [titleValue, setTitleValue] = useState(task.name)
-  const dateRef = useRef<HTMLInputElement>(null)
-  const timeRef = useRef<HTMLInputElement>(null)
 
   const meta = formatMeta(task.dueDate, task.dueTime)
   const repeat = task.repeat ?? 'none'
@@ -116,14 +120,31 @@ export function TaskDetail({ task, onBack, onToggleDone, onToggleFlag, onDelete,
 
       {/* Chips */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '9px', padding: '0 26px', marginTop: '28px' }}>
-        <Chip
-          label={meta ?? 'Add date'}
-          active={!!task.dueDate}
-          icon={<Icon name="calendar" size={13} stroke={dateStroke} />}
-          onClick={() => openPicker(dateRef.current)}
-        />
+        <span style={{ position: 'relative', display: 'inline-flex' }}>
+          <Chip
+            label={meta ?? 'Add date'}
+            active={!!task.dueDate}
+            icon={<Icon name="calendar" size={13} stroke={dateStroke} />}
+          />
+          <input
+            type="date"
+            aria-label="Due date"
+            value={task.dueDate ?? ''}
+            onChange={e => onUpdate({ dueDate: e.target.value || undefined })}
+            style={overlayInput}
+          />
+        </span>
         {task.dueDate && !meta?.includes(':') && (
-          <Chip label="Add time" onClick={() => openPicker(timeRef.current)} />
+          <span style={{ position: 'relative', display: 'inline-flex' }}>
+            <Chip label="Add time" />
+            <input
+              type="time"
+              aria-label="Due time"
+              value={task.dueTime ?? ''}
+              onChange={e => { onUpdate({ dueTime: e.target.value || undefined }); if (e.target.value) void ensurePermission() }}
+              style={overlayInput}
+            />
+          </span>
         )}
         <Chip
           label="Priority"
@@ -143,26 +164,6 @@ export function TaskDetail({ task, onBack, onToggleDone, onToggleFlag, onDelete,
           onClick={cycleRepeat}
         />
       </div>
-
-      {/* Hidden native pickers */}
-      <input
-        ref={dateRef}
-        type="date"
-        value={task.dueDate ?? ''}
-        onChange={e => onUpdate({ dueDate: e.target.value || undefined })}
-        style={{ position: 'absolute', opacity: 0, width: 1, height: 1, border: 0, pointerEvents: 'none' }}
-        tabIndex={-1}
-        aria-hidden
-      />
-      <input
-        ref={timeRef}
-        type="time"
-        value={task.dueTime ?? ''}
-        onChange={e => { onUpdate({ dueTime: e.target.value || undefined }); if (e.target.value) void ensurePermission() }}
-        style={{ position: 'absolute', opacity: 0, width: 1, height: 1, border: 0, pointerEvents: 'none' }}
-        tabIndex={-1}
-        aria-hidden
-      />
 
       {/* Note card */}
       <div

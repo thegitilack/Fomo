@@ -99,8 +99,11 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
               placeholder="Task name"
               enterKeyHint="done"
               autoCapitalize="sentences"
-              autoCorrect="on"
+              autoCorrect="off"
               autoComplete="off"
+              spellCheck={false}
+              data-1p-ignore
+              data-lpignore="true"
               style={{
                 width: '100%',
                 fontFamily: 'var(--fomo-font-sans)',

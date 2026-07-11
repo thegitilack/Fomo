@@ -42,3 +42,8 @@ textarea, input {
   outline: none;
   resize: none;
 }
+
+input::placeholder, textarea::placeholder {
+  color: var(--fomo-text-muted);
+  opacity: 1;
+}

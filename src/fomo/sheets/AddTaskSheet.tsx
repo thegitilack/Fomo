@@ -1,7 +1,6 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Chip } from '../components/Chip'
 import { Icon } from '../components/Icon'
-import { Keyboard } from './Keyboard'
 import { formatMeta, repeatLabel, type Repeat, type NewTask } from '../state/store'
 import { ensurePermission } from '../state/reminders'
 
@@ -31,10 +30,28 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
   const [dueTime, setDueTime] = useState<string | undefined>()
   const [priority, setPriority] = useState(false)
   const [repeat, setRepeat] = useState<Repeat>('none')
+  const [kbOffset, setKbOffset] = useState(0)
+  const inputRef = useRef<HTMLInputElement>(null)
 
-  function handleKey(char: string) { setValue(v => v + char) }
-  function handleBackspace() { setValue(v => v.slice(0, -1)) }
-  function handleReturn() {
+  // Open the native keyboard, and keep the sheet lifted above it.
+  useEffect(() => {
+    inputRef.current?.focus()
+    const vv = window.visualViewport
+    if (!vv) return
+    const onResize = () => {
+      const overlap = window.innerHeight - vv.height - vv.offsetTop
+      setKbOffset(Math.max(0, overlap))
+    }
+    vv.addEventListener('resize', onResize)
+    vv.addEventListener('scroll', onResize)
+    onResize()
+    return () => {
+      vv.removeEventListener('resize', onResize)
+      vv.removeEventListener('scroll', onResize)
+    }
+  }, [])
+
+  function submit() {
     if (value.trim()) onSubmit({ name: value.trim(), dueDate, dueTime, priority, repeat })
     else onClose()
   }
@@ -53,13 +70,13 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
         onClick={onClose}
         style={{ position: 'absolute', inset: 0, background: 'var(--fomo-scrim)' }}
       />
-      {/* Sheet */}
-      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}>
+      {/* Sheet — lifts above the keyboard via kbOffset */}
+      <div style={{ position: 'absolute', left: 0, right: 0, bottom: kbOffset }}>
         <div style={{
           background: 'var(--fomo-surface-sheet)',
           borderRadius: '22px 22px 0 0',
           borderTop: '1px solid var(--fomo-hairline)',
-          padding: '0 24px 22px',
+          padding: '0 24px calc(22px + env(safe-area-inset-bottom))',
         }}>
           {/* Grab handle */}
           <div style={{
@@ -70,26 +87,34 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
             margin: '10px auto 22px',
           }} />
 
-          {/* Input line */}
+          {/* Task name — real native input */}
           <div style={{ paddingBottom: '18px', borderBottom: '1px solid var(--fomo-hairline)' }}>
-            <span style={{
-              fontFamily: 'var(--fomo-font-sans)',
-              fontSize: '17px',
-              fontWeight: 300,
-              letterSpacing: '-0.01em',
-              color: value ? 'var(--fomo-text-primary)' : 'var(--fomo-text-muted)',
-            }}>
-              {value || 'Task name'}
-            </span>
-            <span style={{
-              display: 'inline-block',
-              width: '2px',
-              height: '20px',
-              background: 'var(--fomo-accent)',
-              verticalAlign: '-4px',
-              marginLeft: '2px',
-              animation: 'fomo-caret 1s steps(1) infinite',
-            }} />
+            <input
+              ref={inputRef}
+              className="fomo-task-input"
+              type="text"
+              value={value}
+              onChange={e => setValue(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); submit() } }}
+              placeholder="Task name"
+              enterKeyHint="done"
+              autoCapitalize="sentences"
+              autoCorrect="on"
+              autoComplete="off"
+              style={{
+                width: '100%',
+                fontFamily: 'var(--fomo-font-sans)',
+                fontSize: '17px',
+                fontWeight: 300,
+                letterSpacing: '-0.01em',
+                color: 'var(--fomo-text-primary)',
+                caretColor: 'var(--fomo-accent)',
+                background: 'none',
+                border: 'none',
+                outline: 'none',
+                padding: 0,
+              }}
+            />
           </div>
 
           {/* Chip row */}
@@ -139,8 +164,6 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
             />
           </div>
         </div>
-
-        <Keyboard onKey={handleKey} onBackspace={handleBackspace} onReturn={handleReturn} />
       </div>
     </div>
   )

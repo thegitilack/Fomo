@@ -61,20 +61,6 @@ export function BottomNav({ active = 'today', onChange }: BottomNavProps) {
           )
         })}
       </nav>
-
-      {/* Home indicator */}
-      <div style={{ height: '0px', position: 'relative' }}>
-        <div style={{
-          position: 'absolute',
-          bottom: '-30px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '134px',
-          height: '5px',
-          borderRadius: '3px',
-          background: 'var(--fomo-home-indicator)',
-        }} />
-      </div>
     </div>
   )
 }

@@ -5,6 +5,7 @@ import {
   loadTasks, saveTasks,
 } from './state/store'
 import { syncReminders } from './state/reminders'
+import { BUILD_ID } from './build'
 import { BottomNav } from './components/BottomNav'
 import { FAB } from './components/FAB'
 import { ListScreen } from './screens/ListScreen'
@@ -54,6 +55,21 @@ export function App() {
         paddingTop: 'env(safe-area-inset-top)',
       }}
     >
+      {/* Build marker (top-right) */}
+      <span style={{
+        position: 'absolute',
+        top: 'calc(env(safe-area-inset-top) + 6px)',
+        right: '10px',
+        zIndex: 50,
+        fontFamily: 'var(--fomo-font-mono)',
+        fontSize: '9px',
+        letterSpacing: '0.08em',
+        color: 'var(--fomo-text-faint)',
+        pointerEvents: 'none',
+      }}>
+        {BUILD_ID}
+      </span>
+
       {/* Task Detail (pushed screen) */}
       {editingTask ? (
         <>

@@ -1,11 +1,10 @@
-import { useReducer, useEffect, useState } from 'react'
+import { useReducer, useEffect } from 'react'
 import {
   reducer, INITIAL_STATE,
   todayTasks, upcomingTasks, allTasks,
   loadTasks, saveTasks,
 } from './state/store'
 import { syncReminders } from './state/reminders'
-import { BUILD_ID } from './build'
 import { BottomNav } from './components/BottomNav'
 import { FAB } from './components/FAB'
 import { ListScreen } from './screens/ListScreen'
@@ -13,56 +12,6 @@ import { UpcomingScreen } from './screens/UpcomingScreen'
 import { EmptyState } from './screens/EmptyState'
 import { TaskDetail } from './screens/TaskDetail'
 import { AddTaskSheet } from './sheets/AddTaskSheet'
-
-function DebugBadge() {
-  const [lines, setLines] = useState('')
-  useEffect(() => {
-    const sabProbe = document.createElement('div')
-    sabProbe.style.cssText = 'position:fixed;bottom:0;left:0;width:0;height:env(safe-area-inset-bottom);'
-    const satProbe = document.createElement('div')
-    satProbe.style.cssText = 'position:fixed;top:0;left:0;width:0;height:env(safe-area-inset-top);'
-    document.body.append(sabProbe, satProbe)
-    function measure() {
-      const app = document.querySelector('#root > div') as HTMLElement | null
-      const nav = document.querySelector('nav') as HTMLElement | null
-      const sab = Math.round(sabProbe.getBoundingClientRect().height)
-      const sat = Math.round(satProbe.getBoundingClientRect().height)
-      setLines([
-        BUILD_ID,
-        `scr ${screen.height} in ${window.innerHeight}`,
-        `vis ${Math.round(window.visualViewport?.height || 0)}`,
-        `app ${app ? Math.round(app.getBoundingClientRect().bottom) : '-'}`,
-        `nav ${nav ? Math.round(nav.getBoundingClientRect().bottom) : '-'}`,
-        `sat ${sat} sab ${sab}`,
-      ].join('\n'))
-    }
-    measure()
-    const t = setTimeout(measure, 400)
-    window.visualViewport?.addEventListener('resize', measure)
-    window.addEventListener('resize', measure)
-    return () => {
-      clearTimeout(t)
-      window.visualViewport?.removeEventListener('resize', measure)
-      window.removeEventListener('resize', measure)
-      sabProbe.remove(); satProbe.remove()
-    }
-  }, [])
-  return (
-    <pre style={{
-      position: 'absolute',
-      top: 'calc(env(safe-area-inset-top) + 4px)',
-      right: '8px',
-      zIndex: 60,
-      margin: 0,
-      textAlign: 'right',
-      fontFamily: 'var(--fomo-font-mono)',
-      fontSize: '10px',
-      lineHeight: 1.4,
-      color: 'var(--fomo-text-secondary)',
-      pointerEvents: 'none',
-    }}>{lines}</pre>
-  )
-}
 
 function todayEyebrow(): string {
   const now = new Date()
@@ -105,9 +54,6 @@ export function App() {
         paddingTop: 'env(safe-area-inset-top)',
       }}
     >
-      {/* Debug badge (top-right) — temporary */}
-      <DebugBadge />
-
       {/* Task Detail (pushed screen) */}
       {editingTask ? (
         <>

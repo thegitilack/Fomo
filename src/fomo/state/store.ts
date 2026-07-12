@@ -83,7 +83,7 @@ export const INITIAL_STATE: AppState = {
   activeView: 'today',
   addSheetOpen: false,
   editingTaskId: null,
-  theme: 'dark',
+  theme: 'light',
   tasks: [
     {
       id: uid(), name: 'Call the pharmacy before it closes',

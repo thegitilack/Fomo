@@ -16,13 +16,15 @@ export function ListScreen({ eyebrow, title, tasks, onToggle, onOpen }: ListScre
   const sorted = [...tasks].sort((a, b) => (b.flagged ? 1 : 0) - (a.flagged ? 1 : 0))
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch', paddingBottom: '16px' }}>
-      <div style={{ padding: '46px 26px 0' }}>
+    <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+      {/* Fixed header */}
+      <div style={{ flex: 'none', padding: '46px 26px 20px' }}>
         <Eyebrow>{eyebrow}</Eyebrow>
         <div style={{ height: '8px' }} />
         <PageTitle>{title}</PageTitle>
       </div>
-      <div style={{ padding: '30px 26px 0' }}>
+      {/* Scrolling list */}
+      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch', padding: '10px 26px 16px' }}>
         <TaskCardList>
           {sorted.map(t => (
             <TaskRowCard

@@ -14,8 +14,9 @@ export function UpcomingScreen({ grouped, onToggle, onOpen }: UpcomingScreenProp
   const entries = [...grouped.entries()].sort(([a], [b]) => a.localeCompare(b))
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch', paddingBottom: '16px' }}>
-      <div style={{ padding: '46px 26px 0' }}>
+    <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+      {/* Fixed header */}
+      <div style={{ flex: 'none', padding: '46px 26px 20px' }}>
         <Eyebrow>Next 7 days</Eyebrow>
         <div style={{ height: '8px' }} />
         <PageTitle>Upcoming</PageTitle>
@@ -34,7 +35,7 @@ export function UpcomingScreen({ grouped, onToggle, onOpen }: UpcomingScreenProp
           </div>
         </div>
       ) : (
-        <div style={{ padding: '30px 26px 0' }}>
+        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch', padding: '10px 26px 16px' }}>
           {entries.map(([date, tasks], gi) => (
             <div key={date} style={{ marginTop: gi > 0 ? '22px' : 0 }}>
               <div style={{ marginBottom: '12px' }}>

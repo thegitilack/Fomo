@@ -2,7 +2,7 @@ import type { Task } from '../state/store'
 import { formatMeta, formatDayHeader } from '../state/store'
 import { Eyebrow } from '../components/Eyebrow'
 import { PageTitle } from '../components/PageTitle'
-import { TaskRow } from '../components/TaskRow'
+import { TaskRowCard, TaskCardList } from '../components/TaskRowCard'
 
 interface UpcomingScreenProps {
   grouped: Map<string, Task[]>
@@ -40,19 +40,21 @@ export function UpcomingScreen({ grouped, onToggle, onOpen }: UpcomingScreenProp
               <div style={{ marginBottom: '12px' }}>
                 <Eyebrow>{formatDayHeader(date)}</Eyebrow>
               </div>
-              {tasks.map((t, i) => (
-                <TaskRow
-                  key={t.id}
-                  name={t.name}
-                  meta={formatMeta(undefined, t.dueTime)}
-                  priority={t.priority}
-                  flagged={t.flagged}
-                  done={t.done}
-                  divider={i < tasks.length - 1}
-                  onToggle={() => onToggle(t.id)}
-                  onOpen={() => onOpen(t.id)}
-                />
-              ))}
+              <TaskCardList>
+                {tasks.map(t => (
+                  <TaskRowCard
+                    key={t.id}
+                    variant="filled"
+                    name={t.name}
+                    meta={formatMeta(undefined, t.dueTime)}
+                    priority={t.priority}
+                    flagged={t.flagged}
+                    done={t.done}
+                    onToggle={() => onToggle(t.id)}
+                    onOpen={() => onOpen(t.id)}
+                  />
+                ))}
+              </TaskCardList>
             </div>
           ))}
         </div>

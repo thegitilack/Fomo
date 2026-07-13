@@ -31,10 +31,11 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
   const [priority, setPriority] = useState(false)
   const [repeat, setRepeat] = useState<Repeat>('none')
   const [kbOffset, setKbOffset] = useState(0)
-  const inputRef = useRef<HTMLTextAreaElement>(null)
+  const inputRef = useRef<HTMLDivElement>(null)
 
   // Open the native keyboard, and keep the sheet lifted above it.
   useEffect(() => {
+    inputRef.current?.setAttribute('autocorrect', 'off')
     inputRef.current?.focus()
     const vv = window.visualViewport
     if (!vv) return
@@ -87,28 +88,42 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
             margin: '10px auto 22px',
           }} />
 
-          {/* Task name — real native input */}
-          <div style={{ paddingBottom: '18px', borderBottom: '1px solid var(--fomo-hairline)' }}>
-            <textarea
+          {/* Task name — contentEditable (not a form field) so iOS shows the
+              native keyboard without the form-assistant accessory bar. */}
+          <div style={{ position: 'relative', paddingBottom: '18px', borderBottom: '1px solid var(--fomo-hairline)' }}>
+            {!value && (
+              <span style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                pointerEvents: 'none',
+                fontFamily: 'var(--fomo-font-sans)',
+                fontSize: '17px',
+                fontWeight: 300,
+                letterSpacing: '-0.01em',
+                lineHeight: '24px',
+                color: 'var(--fomo-text-muted)',
+              }}>
+                Task name
+              </span>
+            )}
+            <div
               ref={inputRef}
               className="fomo-task-input"
-              rows={1}
-              value={value}
-              onChange={e => setValue(e.target.value.replace(/\n/g, ''))}
-              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); submit() } }}
-              placeholder="Task name"
+              contentEditable
+              role="textbox"
+              aria-label="Task name"
+              suppressContentEditableWarning
+              inputMode="text"
               enterKeyHint="done"
               autoCapitalize="sentences"
-              autoCorrect="off"
-              autoComplete="off"
               spellCheck={false}
-              data-1p-ignore
-              data-lpignore="true"
+              onInput={e => setValue((e.currentTarget.textContent || '').replace(/\n/g, ''))}
+              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); submit() } }}
               style={{
-                width: '100%',
-                height: '24px',
-                resize: 'none',
-                overflow: 'hidden',
+                minHeight: '24px',
+                whiteSpace: 'nowrap',
+                overflowX: 'auto',
                 fontFamily: 'var(--fomo-font-sans)',
                 fontSize: '17px',
                 fontWeight: 300,
@@ -116,10 +131,7 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
                 lineHeight: '24px',
                 color: 'var(--fomo-text-primary)',
                 caretColor: 'var(--fomo-accent)',
-                background: 'none',
-                border: 'none',
                 outline: 'none',
-                padding: 0,
               }}
             />
           </div>

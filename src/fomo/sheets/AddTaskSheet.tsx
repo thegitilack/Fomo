@@ -4,8 +4,6 @@ import { Icon } from '../components/Icon'
 import { formatMeta, repeatLabel, WEEK_ORDER, weekdayLabel, type Repeat, type NewTask } from '../state/store'
 import { ensurePermission } from '../state/reminders'
 
-const REPEAT_CYCLE: Repeat[] = ['none', 'daily', 'weekly', 'monthly']
-
 interface AddTaskSheetProps {
   onClose: () => void
   onSubmit: (task: NewTask) => void
@@ -32,6 +30,12 @@ const sectionLabel: React.CSSProperties = {
   color: 'var(--fomo-text-muted)',
   marginBottom: '10px',
 }
+
+const PRESETS: { key: Repeat; label: string }[] = [
+  { key: 'daily', label: 'Daily' },
+  { key: 'weekly', label: 'Weekly' },
+  { key: 'monthly', label: 'Monthly' },
+]
 
 export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
   const [value, setValue] = useState('')
@@ -74,13 +78,13 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
       dueTime,
       priority,
       note: note.trim() || undefined,
-      repeat: repeatDays.length ? 'custom' : repeat,
-      repeatDays: repeatDays.length ? repeatDays : undefined,
+      repeat,
+      repeatDays: repeat === 'custom' ? repeatDays : undefined,
     })
   }
-  function cycleRepeat() {
+  function setPreset(p: Repeat) {
     setRepeatDays([])
-    setRepeat(r => REPEAT_CYCLE[(REPEAT_CYCLE.indexOf(r === 'custom' ? 'none' : r) + 1) % REPEAT_CYCLE.length])
+    setRepeat(cur => (cur === p ? 'none' : p))
   }
   function toggleDay(day: number) {
     setRepeatDays(days => {
@@ -90,11 +94,10 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
     })
   }
 
-  const effectiveRepeat: Repeat = repeatDays.length ? 'custom' : repeat
   const dateStroke = dueDate ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'
-  const priStroke = priority ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'
-  const repStroke = effectiveRepeat !== 'none' ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'
+  const repStroke = repeat !== 'none' ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'
   const expStroke = expanded ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'
+  const showDays = repeat === 'none' || repeat === 'custom'
 
   return (
     <div style={{ position: 'absolute', inset: 0, zIndex: 10 }}>
@@ -113,79 +116,80 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
           maxHeight: '84dvh',
           overflowY: 'auto',
         }}>
-          {/* Header — confirm button top-right */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingTop: '14px', height: '52px' }}>
+          {/* Task name + confirm button (aligned) */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', paddingTop: '20px', paddingBottom: '18px', borderBottom: '1px solid var(--fomo-hairline)' }}>
+            <div style={{ flex: 1, minWidth: 0, position: 'relative' }}>
+              {!value && (
+                <span style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  pointerEvents: 'none',
+                  fontFamily: 'var(--fomo-font-sans)',
+                  fontSize: '17px',
+                  fontWeight: 300,
+                  letterSpacing: '-0.01em',
+                  lineHeight: '24px',
+                  color: 'var(--fomo-text-muted)',
+                }}>
+                  Task name
+                </span>
+              )}
+              <div
+                ref={inputRef}
+                className="fomo-task-input"
+                contentEditable
+                role="textbox"
+                aria-label="Task name"
+                suppressContentEditableWarning
+                inputMode="text"
+                enterKeyHint="done"
+                autoCapitalize="sentences"
+                spellCheck={false}
+                onInput={e => setValue((e.currentTarget.textContent || '').replace(/\n/g, ''))}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); submit() } }}
+                style={{
+                  minHeight: '24px',
+                  whiteSpace: 'nowrap',
+                  overflowX: 'auto',
+                  fontFamily: 'var(--fomo-font-sans)',
+                  fontSize: '17px',
+                  fontWeight: 300,
+                  letterSpacing: '-0.01em',
+                  lineHeight: '24px',
+                  color: 'var(--fomo-text-primary)',
+                  caretColor: 'var(--fomo-accent)',
+                  outline: 'none',
+                }}
+              />
+            </div>
+            {/* Confirm — same look as the FAB */}
             <button
               type="button"
               aria-label="Save task"
               onClick={submit}
               style={{
-                width: '38px',
-                height: '38px',
+                flex: 'none',
+                width: '42px',
+                height: '42px',
                 borderRadius: '50%',
-                border: 'none',
-                background: 'var(--fomo-accent)',
-                opacity: canSave ? 1 : 0.4,
+                background: 'var(--fomo-surface-raised)',
+                border: '1px solid var(--fomo-border)',
+                boxShadow: 'var(--fomo-shadow-fab)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                padding: 0,
+                opacity: canSave ? 1 : 0.45,
                 cursor: canSave ? 'pointer' : 'default',
                 transition: 'opacity 150ms ease',
               }}
             >
-              <Icon name="check" size={20} stroke="var(--fomo-on-accent)" strokeWidth={1.8} />
+              <Icon name="check" size={20} stroke="var(--fomo-text-primary)" strokeWidth={1.6} />
             </button>
           </div>
 
-          {/* Task name — contentEditable (not a form field) so iOS shows the
-              native keyboard without the form-assistant accessory bar. */}
-          <div style={{ position: 'relative', paddingBottom: '18px', borderBottom: '1px solid var(--fomo-hairline)' }}>
-            {!value && (
-              <span style={{
-                position: 'absolute',
-                left: 0,
-                top: 0,
-                pointerEvents: 'none',
-                fontFamily: 'var(--fomo-font-sans)',
-                fontSize: '17px',
-                fontWeight: 300,
-                letterSpacing: '-0.01em',
-                lineHeight: '24px',
-                color: 'var(--fomo-text-muted)',
-              }}>
-                Task name
-              </span>
-            )}
-            <div
-              ref={inputRef}
-              className="fomo-task-input"
-              contentEditable
-              role="textbox"
-              aria-label="Task name"
-              suppressContentEditableWarning
-              inputMode="text"
-              enterKeyHint="done"
-              autoCapitalize="sentences"
-              spellCheck={false}
-              onInput={e => setValue((e.currentTarget.textContent || '').replace(/\n/g, ''))}
-              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); submit() } }}
-              style={{
-                minHeight: '24px',
-                whiteSpace: 'nowrap',
-                overflowX: 'auto',
-                fontFamily: 'var(--fomo-font-sans)',
-                fontSize: '17px',
-                fontWeight: 300,
-                letterSpacing: '-0.01em',
-                lineHeight: '24px',
-                color: 'var(--fomo-text-primary)',
-                caretColor: 'var(--fomo-accent)',
-                outline: 'none',
-              }}
-            />
-          </div>
-
-          {/* Chip row */}
+          {/* Chip row: Due date, Repeat, More */}
           <div style={{ display: 'flex', gap: '9px', marginTop: '18px', overflowX: 'auto' }}>
             <span style={{ position: 'relative', display: 'inline-flex', flex: 'none' }}>
               <Chip
@@ -223,16 +227,10 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
             )}
 
             <Chip
-              label="Priority"
-              active={priority}
-              icon={<Icon name="flag" size={13} stroke={priStroke} />}
-              onClick={() => setPriority(p => !p)}
-            />
-            <Chip
-              label={repeatLabel(effectiveRepeat, repeatDays)}
-              active={effectiveRepeat !== 'none'}
+              label={repeatLabel(repeat, repeatDays)}
+              active={repeat !== 'none'}
               icon={<Icon name="repeat" size={13} stroke={repStroke} />}
-              onClick={cycleRepeat}
+              onClick={() => setExpanded(true)}
             />
             <Chip
               label={expanded ? 'Less' : 'More'}
@@ -242,10 +240,58 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
             />
           </div>
 
-          {/* Expanded panel: notes + custom repeat days */}
+          {/* Expanded options */}
           {expanded && (
             <div style={{ marginTop: '24px' }}>
-              <div style={sectionLabel}>Note</div>
+              {/* Repeat */}
+              <div style={sectionLabel}>Repeat</div>
+              <div style={{ display: 'flex', gap: '9px', flexWrap: 'wrap' }}>
+                {PRESETS.map(p => (
+                  <Chip
+                    key={p.key}
+                    label={p.label}
+                    active={repeat === p.key}
+                    onClick={() => setPreset(p.key)}
+                  />
+                ))}
+              </div>
+
+              {showDays && (
+                <>
+                  <div style={{ ...sectionLabel, marginTop: '18px' }}>Repeat on</div>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    {WEEK_ORDER.map((day, i) => {
+                      const on = repeatDays.includes(day)
+                      return (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => toggleDay(day)}
+                          aria-pressed={on}
+                          style={{
+                            flex: 1,
+                            height: '40px',
+                            borderRadius: '10px',
+                            border: 'none',
+                            background: on ? 'var(--fomo-accent)' : 'var(--fomo-surface-raised)',
+                            color: on ? 'var(--fomo-on-accent)' : 'var(--fomo-text-secondary)',
+                            fontFamily: 'var(--fomo-font-sans)',
+                            fontSize: '14px',
+                            fontWeight: 500,
+                            cursor: 'pointer',
+                            transition: 'background 120ms ease, color 120ms ease',
+                          }}
+                        >
+                          {weekdayLabel(day)}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </>
+              )}
+
+              {/* Note */}
+              <div style={{ ...sectionLabel, marginTop: '24px' }}>Note</div>
               <textarea
                 value={note}
                 onChange={e => setNote(e.target.value)}
@@ -268,35 +314,14 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
                 }}
               />
 
-              <div style={{ ...sectionLabel, marginTop: '24px' }}>Repeat on</div>
-              <div style={{ display: 'flex', gap: '6px' }}>
-                {WEEK_ORDER.map((day, i) => {
-                  const on = repeatDays.includes(day)
-                  return (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => toggleDay(day)}
-                      aria-pressed={on}
-                      style={{
-                        flex: 1,
-                        height: '40px',
-                        borderRadius: '10px',
-                        border: 'none',
-                        background: on ? 'var(--fomo-accent)' : 'var(--fomo-surface-raised)',
-                        color: on ? 'var(--fomo-on-accent)' : 'var(--fomo-text-secondary)',
-                        fontFamily: 'var(--fomo-font-sans)',
-                        fontSize: '14px',
-                        fontWeight: 500,
-                        cursor: 'pointer',
-                        transition: 'background 120ms ease, color 120ms ease',
-                      }}
-                    >
-                      {weekdayLabel(day)}
-                    </button>
-                  )
-                })}
-              </div>
+              {/* Priority */}
+              <div style={{ ...sectionLabel, marginTop: '24px' }}>Priority</div>
+              <Chip
+                label={priority ? 'High priority' : 'Normal'}
+                active={priority}
+                icon={<Icon name="flag" size={13} stroke={priority ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'} />}
+                onClick={() => setPriority(p => !p)}
+              />
             </div>
           )}
         </div>

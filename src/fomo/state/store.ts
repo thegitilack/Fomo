@@ -1,4 +1,4 @@
-export type Repeat = 'none' | 'daily' | 'weekly' | 'monthly'
+export type Repeat = 'none' | 'daily' | 'weekly' | 'monthly' | 'custom'
 
 export interface Task {
   id: string
@@ -10,6 +10,7 @@ export interface Task {
   dueTime?: string   // HH:MM (24h)
   note?: string
   repeat?: Repeat
+  repeatDays?: number[]  // for 'custom': weekday numbers, 0=Sun … 6=Sat
 }
 
 export interface NewTask {
@@ -19,6 +20,7 @@ export interface NewTask {
   priority?: boolean
   note?: string
   repeat?: Repeat
+  repeatDays?: number[]
 }
 
 export type View = 'today' | 'upcoming' | 'all'
@@ -55,19 +57,37 @@ function uid(): string {
   return Math.random().toString(36).slice(2, 10)
 }
 
-export function nextDate(dateStr: string, repeat: Repeat): string {
+const WEEKDAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'] // index = getDay(), 0=Sun
+const WEEKDAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+// Monday-first display order (getDay values)
+export const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0]
+
+export function weekdayLabel(day: number): string {
+  return WEEKDAY_LABELS[day] ?? '?'
+}
+
+export function nextDate(dateStr: string, repeat: Repeat, repeatDays?: number[]): string {
   const d = new Date(dateStr + 'T12:00:00')
   if (repeat === 'daily') d.setDate(d.getDate() + 1)
   else if (repeat === 'weekly') d.setDate(d.getDate() + 7)
   else if (repeat === 'monthly') d.setMonth(d.getMonth() + 1)
+  else if (repeat === 'custom' && repeatDays && repeatDays.length) {
+    // advance to the next day whose weekday is in the set
+    do { d.setDate(d.getDate() + 1) } while (!repeatDays.includes(d.getDay()))
+  }
   return d.toISOString().slice(0, 10)
 }
 
-export function repeatLabel(repeat?: Repeat): string {
+export function repeatLabel(repeat?: Repeat, repeatDays?: number[]): string {
   switch (repeat) {
     case 'daily':   return 'Every day'
     case 'weekly':  return 'Every week'
     case 'monthly': return 'Every month'
+    case 'custom': {
+      if (!repeatDays || !repeatDays.length) return 'Repeat'
+      if (repeatDays.length === 7) return 'Every day'
+      return WEEK_ORDER.filter(d => repeatDays.includes(d)).map(d => WEEKDAY_SHORT[d]).join(', ')
+    }
     default:        return 'Repeat'
   }
 }
@@ -152,7 +172,7 @@ export function reducer(state: AppState, action: Action): AppState {
       const toggled = state.tasks.map(t => t.id === action.id ? { ...t, done: !t.done } : t)
       // Completing a recurring task spawns its next occurrence.
       if (target && !target.done && target.repeat && target.repeat !== 'none' && target.dueDate) {
-        const next: Task = { ...target, id: uid(), done: false, dueDate: nextDate(target.dueDate, target.repeat) }
+        const next: Task = { ...target, id: uid(), done: false, dueDate: nextDate(target.dueDate, target.repeat, target.repeatDays) }
         return { ...state, tasks: [next, ...toggled] }
       }
       return { ...state, tasks: toggled }
@@ -172,6 +192,7 @@ export function reducer(state: AppState, action: Action): AppState {
         dueTime: action.task.dueTime,
         note: action.task.note?.trim() || undefined,
         repeat: action.task.repeat ?? 'none',
+        repeatDays: action.task.repeat === 'custom' ? action.task.repeatDays : undefined,
       }
       return { ...state, tasks: [task, ...state.tasks], addSheetOpen: false }
     }

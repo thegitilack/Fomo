@@ -135,6 +135,7 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
               <input
                 type="date"
                 aria-label="Due date"
+                tabIndex={-1}
                 value={dueDate ?? ''}
                 onChange={e => setDueDate(e.target.value || undefined)}
                 style={overlayInput}
@@ -150,6 +151,7 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
                 <input
                   type="time"
                   aria-label="Due time"
+                  tabIndex={-1}
                   value={dueTime ?? ''}
                   onChange={e => { setDueTime(e.target.value || undefined); if (e.target.value) void ensurePermission() }}
                   style={overlayInput}

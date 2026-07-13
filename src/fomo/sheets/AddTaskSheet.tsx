@@ -31,7 +31,7 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
   const [priority, setPriority] = useState(false)
   const [repeat, setRepeat] = useState<Repeat>('none')
   const [kbOffset, setKbOffset] = useState(0)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
 
   // Open the native keyboard, and keep the sheet lifted above it.
   useEffect(() => {
@@ -89,12 +89,12 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
 
           {/* Task name — real native input */}
           <div style={{ paddingBottom: '18px', borderBottom: '1px solid var(--fomo-hairline)' }}>
-            <input
+            <textarea
               ref={inputRef}
               className="fomo-task-input"
-              type="text"
+              rows={1}
               value={value}
-              onChange={e => setValue(e.target.value)}
+              onChange={e => setValue(e.target.value.replace(/\n/g, ''))}
               onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); submit() } }}
               placeholder="Task name"
               enterKeyHint="done"
@@ -106,10 +106,14 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
               data-lpignore="true"
               style={{
                 width: '100%',
+                height: '24px',
+                resize: 'none',
+                overflow: 'hidden',
                 fontFamily: 'var(--fomo-font-sans)',
                 fontSize: '17px',
                 fontWeight: 300,
                 letterSpacing: '-0.01em',
+                lineHeight: '24px',
                 color: 'var(--fomo-text-primary)',
                 caretColor: 'var(--fomo-accent)',
                 background: 'none',

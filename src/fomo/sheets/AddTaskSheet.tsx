@@ -270,16 +270,16 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
                           aria-pressed={on}
                           style={{
                             flex: 1,
-                            height: '40px',
-                            borderRadius: '10px',
-                            border: 'none',
-                            background: on ? 'var(--fomo-accent)' : 'var(--fomo-surface-raised)',
-                            color: on ? 'var(--fomo-on-accent)' : 'var(--fomo-text-secondary)',
+                            height: '38px',
+                            borderRadius: '999px',
+                            border: `1px solid ${on ? 'var(--fomo-chip-active-bd)' : 'var(--fomo-border)'}`,
+                            background: on ? 'var(--fomo-chip-active-bg)' : 'transparent',
+                            color: on ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)',
                             fontFamily: 'var(--fomo-font-sans)',
-                            fontSize: '14px',
+                            fontSize: '13px',
                             fontWeight: 500,
                             cursor: 'pointer',
-                            transition: 'background 120ms ease, color 120ms ease',
+                            transition: 'background 120ms ease, color 120ms ease, border-color 120ms ease',
                           }}
                         >
                           {weekdayLabel(day)}

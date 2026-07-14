@@ -80,12 +80,12 @@ export function nextDate(dateStr: string, repeat: Repeat, repeatDays?: number[])
 
 export function repeatLabel(repeat?: Repeat, repeatDays?: number[]): string {
   switch (repeat) {
-    case 'daily':   return 'Every day'
-    case 'weekly':  return 'Every week'
-    case 'monthly': return 'Every month'
+    case 'daily':   return 'Daily'
+    case 'weekly':  return 'Weekly'
+    case 'monthly': return 'Monthly'
     case 'custom': {
       if (!repeatDays || !repeatDays.length) return 'Repeat'
-      if (repeatDays.length === 7) return 'Every day'
+      if (repeatDays.length === 7) return 'Daily'
       return WEEK_ORDER.filter(d => repeatDays.includes(d)).map(d => WEEKDAY_SHORT[d]).join(', ')
     }
     default:        return 'Repeat'

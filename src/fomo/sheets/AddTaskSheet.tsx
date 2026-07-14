@@ -107,8 +107,6 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
   const timeStroke = dueTime ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'
   const repStroke = isRepeatSet ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'
   const priStroke = priority ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'
-  // Weekly with no explicit days defaults to the start-date's weekday.
-  const anchorWeekday = new Date((dueDate ?? new Date().toISOString().slice(0, 10)) + 'T12:00:00').getDay()
 
   return (
     <div style={{ position: 'absolute', inset: 0, zIndex: 10 }}>
@@ -273,10 +271,8 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
               <div style={{ ...sectionLabel, marginTop: '18px' }}>Repeat on</div>
               <div style={{ display: 'flex', gap: '6px' }}>
                 {WEEK_ORDER.map((day, i) => {
-                  // Weekly with no explicit days defaults to the start-date weekday.
-                  const on = repeatDays.length
-                    ? repeatDays.includes(day)
-                    : repeat === 'weekly' && day === anchorWeekday
+                  // Pills reflect only explicitly chosen days — never auto-filled.
+                  const on = repeatDays.includes(day)
                   return (
                     <button
                       key={i}

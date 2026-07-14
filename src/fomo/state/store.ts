@@ -13,13 +13,16 @@ export interface Task {
   repeatDays?: number[]  // for 'custom': weekday numbers, 0=Sun … 6=Sat
   startDate?: string     // repeating: when the recurrence begins (anchor)
   endDate?: string       // repeating: repeat-until date (inclusive); undefined = forever
+  endTime?: string       // repeating: HH:MM cutoff on the repeat-until date
   lastCompleted?: string // repeating: the day (YYYY-MM-DD) it was last ticked off
 }
 
 export interface NewTask {
   name: string
   dueDate?: string       // non-repeating due date
+  startDate?: string     // repeating: start/anchor date (falls back to today)
   endDate?: string       // repeating: repeat-until date
+  endTime?: string       // repeating: HH:MM cutoff on the repeat-until date
   dueTime?: string
   priority?: boolean
   note?: string
@@ -239,11 +242,12 @@ export function reducer(state: AppState, action: Action): AppState {
         note: action.task.note?.trim() || undefined,
         repeat,
         repeatDays: repeat === 'custom' ? action.task.repeatDays : undefined,
-        // Non-repeating → a due date; repeating → a start (today) and an
-        // optional end (repeat-until) date.
+        // Non-repeating → a due date; repeating → a start date (the picked
+        // date, or today if none) and an optional end (repeat-until) date+time.
         dueDate: repeating ? undefined : action.task.dueDate,
-        startDate: repeating ? today() : undefined,
+        startDate: repeating ? (action.task.startDate ?? today()) : undefined,
         endDate: repeating ? action.task.endDate : undefined,
+        endTime: repeating ? action.task.endTime : undefined,
       }
       return { ...state, tasks: [task, ...state.tasks], addSheetOpen: false }
     }

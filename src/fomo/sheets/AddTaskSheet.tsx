@@ -45,7 +45,7 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
   const [repeat, setRepeat] = useState<Repeat>('none')
   const [repeatDays, setRepeatDays] = useState<number[]>([])
   const [endDate, setEndDate] = useState<string | undefined>()
-  const [repeatTime, setRepeatTime] = useState<string | undefined>()
+  const [endTime, setEndTime] = useState<string | undefined>()
   const [note, setNote] = useState('')
   const [expanded, setExpanded] = useState(false)
   const [kbOffset, setKbOffset] = useState(0)
@@ -78,11 +78,14 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
     if (!canSave) return
     onSubmit({
       name: value.trim(),
-      // One-off: a plain due date + time. Repeating: no due date; instead a
-      // repeat-until (end) date and the occurrence time.
+      // One-off: the Date/Hour are a plain due date + time. Repeating: the
+      // Date/Hour become the start date + per-occurrence time (start falls
+      // back to today), plus an optional repeat-until date and cutoff time.
       dueDate: isRepeatSet ? undefined : dueDate,
+      startDate: isRepeatSet ? dueDate : undefined,
+      dueTime,
       endDate: isRepeatSet ? endDate : undefined,
-      dueTime: isRepeatSet ? repeatTime : dueTime,
+      endTime: isRepeatSet && endDate ? endTime : undefined,
       priority,
       note: note.trim() || undefined,
       repeat,
@@ -101,8 +104,8 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
     })
   }
 
-  const dateStroke = !isRepeatSet && dueDate ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'
-  const timeStroke = !isRepeatSet && dueTime ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'
+  const dateStroke = dueDate ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'
+  const timeStroke = dueTime ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'
   const repStroke = isRepeatSet ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'
   const priStroke = priority ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'
 
@@ -198,44 +201,40 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
 
           {/* Chip row: Date, Hour, Repeat, Priority */}
           <div style={{ display: 'flex', gap: '9px', marginTop: '18px', overflowX: 'auto' }}>
-            {/* Date — a plain due date; disabled when the task repeats */}
-            <span style={{ position: 'relative', display: 'inline-flex', flex: 'none', opacity: isRepeatSet ? 0.4 : 1 }}>
+            {/* Date — one-off due date, or the repeating start/anchor date */}
+            <span style={{ position: 'relative', display: 'inline-flex', flex: 'none' }}>
               <Chip
-                label={!isRepeatSet && dueDate ? (formatMeta(dueDate) ?? 'Date') : 'Date'}
-                active={!isRepeatSet && !!dueDate}
+                label={dueDate ? (formatMeta(dueDate) ?? 'Date') : 'Date'}
+                active={!!dueDate}
                 icon={<Icon name="calendar" size={13} stroke={dateStroke} />}
               />
-              {!isRepeatSet && (
-                <input
-                  type="date"
-                  aria-label="Date"
-                  tabIndex={-1}
-                  value={dueDate ?? ''}
-                  onChange={e => setDueDate(e.target.value || undefined)}
-                  onBlur={() => inputRef.current?.focus()}
-                  style={overlayInput}
-                />
-              )}
+              <input
+                type="date"
+                aria-label="Date"
+                tabIndex={-1}
+                value={dueDate ?? ''}
+                onChange={e => setDueDate(e.target.value || undefined)}
+                onBlur={() => inputRef.current?.focus()}
+                style={overlayInput}
+              />
             </span>
 
-            {/* Hour — the due time; disabled when the task repeats */}
-            <span style={{ position: 'relative', display: 'inline-flex', flex: 'none', opacity: isRepeatSet ? 0.4 : 1 }}>
+            {/* Hour — one-off due time, or the per-occurrence time */}
+            <span style={{ position: 'relative', display: 'inline-flex', flex: 'none' }}>
               <Chip
-                label={!isRepeatSet && dueTime ? (formatMeta(undefined, dueTime) ?? 'Hour') : 'Hour'}
-                active={!isRepeatSet && !!dueTime}
+                label={dueTime ? (formatMeta(undefined, dueTime) ?? 'Hour') : 'Hour'}
+                active={!!dueTime}
                 icon={<Icon name="clock" size={13} stroke={timeStroke} />}
               />
-              {!isRepeatSet && (
-                <input
-                  type="time"
-                  aria-label="Hour"
-                  tabIndex={-1}
-                  value={dueTime ?? ''}
-                  onChange={e => { setDueTime(e.target.value || undefined); if (e.target.value) void ensurePermission() }}
-                  onBlur={() => inputRef.current?.focus()}
-                  style={overlayInput}
-                />
-              )}
+              <input
+                type="time"
+                aria-label="Hour"
+                tabIndex={-1}
+                value={dueTime ?? ''}
+                onChange={e => { setDueTime(e.target.value || undefined); if (e.target.value) void ensurePermission() }}
+                onBlur={() => inputRef.current?.focus()}
+                style={overlayInput}
+              />
             </span>
 
             <Chip
@@ -319,22 +318,24 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
                     style={overlayInput}
                   />
                 </span>
-                <span style={{ position: 'relative', display: 'inline-flex', flex: 'none' }}>
-                  <Chip
-                    label={repeatTime ? (formatMeta(undefined, repeatTime) ?? 'Hour') : 'Hour'}
-                    active={!!repeatTime}
-                    icon={<Icon name="clock" size={13} stroke={repeatTime ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'} />}
-                  />
-                  <input
-                    type="time"
-                    aria-label="Repeat time"
-                    tabIndex={-1}
-                    value={repeatTime ?? ''}
-                    onChange={e => { setRepeatTime(e.target.value || undefined); if (e.target.value) void ensurePermission() }}
-                    onBlur={() => inputRef.current?.focus()}
-                    style={overlayInput}
-                  />
-                </span>
+                {endDate && (
+                  <span style={{ position: 'relative', display: 'inline-flex', flex: 'none' }}>
+                    <Chip
+                      label={endTime ? (formatMeta(undefined, endTime) ?? 'Hour') : 'Hour'}
+                      active={!!endTime}
+                      icon={<Icon name="clock" size={13} stroke={endTime ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'} />}
+                    />
+                    <input
+                      type="time"
+                      aria-label="Repeat until time"
+                      tabIndex={-1}
+                      value={endTime ?? ''}
+                      onChange={e => setEndTime(e.target.value || undefined)}
+                      onBlur={() => inputRef.current?.focus()}
+                      style={overlayInput}
+                    />
+                  </span>
+                )}
               </div>
 
               {/* Note */}

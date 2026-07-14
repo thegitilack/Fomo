@@ -207,14 +207,14 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
                 label={
                   dueDate
                     ? (isRepeatSet ? `Until ${formatMeta(dueDate)}` : (formatMeta(dueDate) ?? 'Due date'))
-                    : (isRepeatSet ? 'End date' : 'Due date')
+                    : (isRepeatSet ? 'Repeat until' : 'Due date')
                 }
                 active={!!dueDate}
                 icon={<Icon name="calendar" size={13} stroke={dateStroke} />}
               />
               <input
                 type="date"
-                aria-label={isRepeatSet ? 'End date' : 'Due date'}
+                aria-label={isRepeatSet ? 'Repeat until' : 'Due date'}
                 tabIndex={-1}
                 value={dueDate ?? ''}
                 onChange={e => setDueDate(e.target.value || undefined)}

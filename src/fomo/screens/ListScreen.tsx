@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { Task } from '../state/store'
-import { formatMeta } from '../state/store'
+import { taskMeta, isDoneToday } from '../state/store'
 import { Eyebrow } from '../components/Eyebrow'
 import { PageTitle } from '../components/PageTitle'
 import { TaskRowCard, TaskCardList } from '../components/TaskRowCard'
@@ -43,10 +43,10 @@ export function ListScreen({ eyebrow, title, tasks, onToggle, onOpen }: ListScre
               key={t.id}
               variant="filled"
               name={t.name}
-              meta={formatMeta(t.dueDate, t.dueTime)}
+              meta={taskMeta(t)}
               priority={t.priority}
               flagged={t.flagged}
-              done={t.done}
+              done={isDoneToday(t)}
               onToggle={() => onToggle(t.id)}
               onOpen={() => onOpen(t.id)}
             />

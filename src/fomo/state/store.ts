@@ -3,19 +3,23 @@ export type Repeat = 'none' | 'daily' | 'weekly' | 'monthly' | 'custom'
 export interface Task {
   id: string
   name: string
-  done: boolean
+  done: boolean          // completion for non-repeating tasks
   flagged: boolean
   priority: boolean
-  dueDate?: string   // YYYY-MM-DD
-  dueTime?: string   // HH:MM (24h)
+  dueDate?: string       // YYYY-MM-DD — for non-repeating tasks
+  dueTime?: string       // HH:MM (24h)
   note?: string
   repeat?: Repeat
   repeatDays?: number[]  // for 'custom': weekday numbers, 0=Sun … 6=Sat
+  startDate?: string     // repeating: when the recurrence begins (anchor)
+  endDate?: string       // repeating: repeat-until date (inclusive); undefined = forever
+  lastCompleted?: string // repeating: the day (YYYY-MM-DD) it was last ticked off
 }
 
 export interface NewTask {
   name: string
-  dueDate?: string
+  dueDate?: string       // non-repeating due date
+  endDate?: string       // repeating: repeat-until date
   dueTime?: string
   priority?: boolean
   note?: string
@@ -90,6 +94,43 @@ export function repeatLabel(repeat?: Repeat, repeatDays?: number[]): string {
     }
     default:        return 'Repeat'
   }
+}
+
+// ── Recurrence ────────────────────────────────────────────────────────────────
+
+export function isRepeating(task: Task): boolean {
+  return !!task.repeat && task.repeat !== 'none'
+}
+
+/** Does a repeating task occur on the given date (respecting start/end)? */
+export function occursOn(task: Task, dateStr: string): boolean {
+  if (!isRepeating(task)) return false
+  if (task.startDate && dateStr < task.startDate) return false
+  if (task.endDate && dateStr > task.endDate) return false
+  const d = new Date(dateStr + 'T12:00:00')
+  const anchor = new Date((task.startDate ?? dateStr) + 'T12:00:00')
+  switch (task.repeat) {
+    case 'daily':   return true
+    case 'custom':  return !!task.repeatDays?.includes(d.getDay())
+    case 'weekly':  return d.getDay() === anchor.getDay()
+    case 'monthly': return d.getDate() === anchor.getDate()
+    default:        return false
+  }
+}
+
+/** Completion state as shown today (per-day for repeating tasks). */
+export function isDoneToday(task: Task): boolean {
+  return isRepeating(task) ? task.lastCompleted === today() : task.done
+}
+
+/** Meta line for a task row: recurrence + time, or due date + time. */
+export function taskMeta(task: Task): string | undefined {
+  if (isRepeating(task)) {
+    const label = repeatLabel(task.repeat, task.repeatDays)
+    const time = formatMeta(undefined, task.dueTime)
+    return time ? `${label} · ${time}` : label
+  }
+  return formatMeta(task.dueDate, task.dueTime)
 }
 
 // ── Initial seed data (matches design reference) ──────────────────────────────
@@ -168,31 +209,41 @@ export const INITIAL_STATE: AppState = {
 export function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
     case 'TOGGLE_DONE': {
-      const target = state.tasks.find(t => t.id === action.id)
-      const toggled = state.tasks.map(t => t.id === action.id ? { ...t, done: !t.done } : t)
-      // Completing a recurring task spawns its next occurrence.
-      if (target && !target.done && target.repeat && target.repeat !== 'none' && target.dueDate) {
-        const next: Task = { ...target, id: uid(), done: false, dueDate: nextDate(target.dueDate, target.repeat, target.repeatDays) }
-        return { ...state, tasks: [next, ...toggled] }
+      const t = today()
+      return {
+        ...state,
+        tasks: state.tasks.map(task => {
+          if (task.id !== action.id) return task
+          if (isRepeating(task)) {
+            // per-day completion: toggle today in/out of "done"
+            return { ...task, lastCompleted: task.lastCompleted === t ? undefined : t }
+          }
+          return { ...task, done: !task.done }
+        }),
       }
-      return { ...state, tasks: toggled }
     }
     case 'TOGGLE_FLAG':
       return { ...state, tasks: state.tasks.map(t => t.id === action.id ? { ...t, flagged: !t.flagged } : t) }
     case 'ADD_TASK': {
       const name = action.task.name.trim()
       if (!name) return state
+      const repeat = action.task.repeat ?? 'none'
+      const repeating = repeat !== 'none'
       const task: Task = {
         id: uid(),
         name,
         done: false,
         flagged: false,
         priority: action.task.priority ?? false,
-        dueDate: action.task.dueDate,
         dueTime: action.task.dueTime,
         note: action.task.note?.trim() || undefined,
-        repeat: action.task.repeat ?? 'none',
-        repeatDays: action.task.repeat === 'custom' ? action.task.repeatDays : undefined,
+        repeat,
+        repeatDays: repeat === 'custom' ? action.task.repeatDays : undefined,
+        // Non-repeating → a due date; repeating → a start (today) and an
+        // optional end (repeat-until) date.
+        dueDate: repeating ? undefined : action.task.dueDate,
+        startDate: repeating ? today() : undefined,
+        endDate: repeating ? action.task.endDate : undefined,
       }
       return { ...state, tasks: [task, ...state.tasks], addSheetOpen: false }
     }
@@ -224,13 +275,15 @@ export function reducer(state: AppState, action: Action): AppState {
 export function todayTasks(tasks: Task[]): Task[] {
   const t = today()
   return tasks
-    .filter(task => !task.dueDate || task.dueDate === t)
+    .filter(task => (isRepeating(task) ? occursOn(task, t) : (!task.dueDate || task.dueDate === t)))
     .sort((a, b) => (b.flagged ? 1 : 0) - (a.flagged ? 1 : 0))
 }
 
 export function upcomingTasks(tasks: Task[]): Map<string, Task[]> {
   const t = today()
-  const future = tasks.filter(task => task.dueDate && task.dueDate > t && !task.done)
+  // Repeating tasks are habit-style (they live in Today); only dated,
+  // non-repeating tasks populate Upcoming.
+  const future = tasks.filter(task => !isRepeating(task) && task.dueDate && task.dueDate > t && !task.done)
   const grouped = new Map<string, Task[]>()
   for (const task of future) {
     const key = task.dueDate!

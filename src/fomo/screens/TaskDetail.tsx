@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { Task, Repeat } from '../state/store'
-import { formatMeta, repeatLabel } from '../state/store'
+import { formatMeta, repeatLabel, isDoneToday } from '../state/store'
 import { ensurePermission } from '../state/reminders'
 import { Checkbox } from '../components/Checkbox'
 import { Chip } from '../components/Chip'
@@ -72,7 +72,7 @@ export function TaskDetail({ task, onBack, onToggleDone, onToggleFlag, onDelete,
       {/* Title + checkbox */}
       <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start', padding: '0 26px', marginTop: '26px' }}>
         <div style={{ marginTop: '4px' }}>
-          <Checkbox checked={task.done} size={24} onChange={onToggleDone} />
+          <Checkbox checked={isDoneToday(task)} size={24} onChange={onToggleDone} />
         </div>
         {editingTitle ? (
           <textarea
@@ -108,8 +108,8 @@ export function TaskDetail({ task, onBack, onToggleDone, onToggleFlag, onDelete,
               fontWeight: 300,
               letterSpacing: '-0.02em',
               lineHeight: 1.3,
-              color: task.done ? 'var(--fomo-text-done)' : 'var(--fomo-text-primary)',
-              textDecorationLine: task.done ? 'line-through' : 'none',
+              color: isDoneToday(task) ? 'var(--fomo-text-done)' : 'var(--fomo-text-primary)',
+              textDecorationLine: isDoneToday(task) ? 'line-through' : 'none',
               textDecorationColor: 'var(--fomo-ring)',
             }}
           >

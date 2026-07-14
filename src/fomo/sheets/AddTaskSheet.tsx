@@ -70,11 +70,15 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
 
   const canSave = !!value.trim()
 
+  const isRepeatSet = repeat !== 'none'
+
   function submit() {
     if (!canSave) return
     onSubmit({
       name: value.trim(),
-      dueDate,
+      // When repeating, the picked date is the repeat-until (end) date.
+      dueDate: isRepeatSet ? undefined : dueDate,
+      endDate: isRepeatSet ? dueDate : undefined,
       dueTime,
       priority,
       note: note.trim() || undefined,
@@ -200,13 +204,17 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
 
             <span style={{ position: 'relative', display: 'inline-flex', flex: 'none' }}>
               <Chip
-                label={dueDate ? (formatMeta(dueDate) ?? 'Due date') : 'Due date'}
+                label={
+                  dueDate
+                    ? (isRepeatSet ? `Until ${formatMeta(dueDate)}` : (formatMeta(dueDate) ?? 'Due date'))
+                    : (isRepeatSet ? 'End date' : 'Due date')
+                }
                 active={!!dueDate}
                 icon={<Icon name="calendar" size={13} stroke={dateStroke} />}
               />
               <input
                 type="date"
-                aria-label="Due date"
+                aria-label={isRepeatSet ? 'End date' : 'Due date'}
                 tabIndex={-1}
                 value={dueDate ?? ''}
                 onChange={e => setDueDate(e.target.value || undefined)}
@@ -215,7 +223,7 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
               />
             </span>
 
-            {dueDate && (
+            {(dueDate || isRepeatSet) && (
               <span style={{ position: 'relative', display: 'inline-flex', flex: 'none' }}>
                 <Chip
                   label={dueTime ? (formatMeta(undefined, dueTime) ?? 'Time') : 'Add time'}

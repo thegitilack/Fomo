@@ -96,7 +96,7 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
 
   const dateStroke = dueDate ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'
   const repStroke = repeat !== 'none' ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'
-  const expStroke = expanded ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'
+  const priStroke = priority ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'
   const showDays = repeat === 'none' || repeat === 'custom'
 
   return (
@@ -189,8 +189,15 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
             </button>
           </div>
 
-          {/* Chip row: Due date, Repeat, More */}
+          {/* Chip row: Repeat, Due date, Priority */}
           <div style={{ display: 'flex', gap: '9px', marginTop: '18px', overflowX: 'auto' }}>
+            <Chip
+              label={repeatLabel(repeat, repeatDays)}
+              active={repeat !== 'none'}
+              icon={<Icon name="repeat" size={13} stroke={repStroke} />}
+              onClick={() => setExpanded(x => !x)}
+            />
+
             <span style={{ position: 'relative', display: 'inline-flex', flex: 'none' }}>
               <Chip
                 label={dueDate ? (formatMeta(dueDate) ?? 'Due date') : 'Due date'}
@@ -227,16 +234,10 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
             )}
 
             <Chip
-              label={repeatLabel(repeat, repeatDays)}
-              active={repeat !== 'none'}
-              icon={<Icon name="repeat" size={13} stroke={repStroke} />}
-              onClick={() => setExpanded(true)}
-            />
-            <Chip
-              label={expanded ? 'Less' : 'More'}
-              active={expanded}
-              icon={<Icon name="note" size={13} stroke={expStroke} />}
-              onClick={() => setExpanded(x => !x)}
+              label="Priority"
+              active={priority}
+              icon={<Icon name="flag" size={13} stroke={priStroke} />}
+              onClick={() => setPriority(p => !p)}
             />
           </div>
 
@@ -312,15 +313,6 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
                   padding: '12px 14px',
                   outline: 'none',
                 }}
-              />
-
-              {/* Priority */}
-              <div style={{ ...sectionLabel, marginTop: '24px' }}>Priority</div>
-              <Chip
-                label={priority ? 'High priority' : 'Normal'}
-                active={priority}
-                icon={<Icon name="flag" size={13} stroke={priority ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'} />}
-                onClick={() => setPriority(p => !p)}
               />
             </div>
           )}

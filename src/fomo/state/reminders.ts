@@ -1,4 +1,5 @@
 import type { Task } from './store'
+import { isRepeating, occursOn } from './store'
 
 // ── Local reminders ───────────────────────────────────────────────────────────
 // Fires a notification at a task's due date+time.
@@ -32,10 +33,32 @@ export async function ensurePermission(): Promise<boolean> {
 const MAX_TIMEOUT = 2_147_483_647 // ~24.8 days — setTimeout ceiling
 const timers = new Map<string, number>()
 
-function dueTimestamp(task: Task): number | null {
-  if (!task.dueDate || !task.dueTime) return null
+function todayStr(): string {
+  return new Date().toISOString().slice(0, 10)
+}
+
+/** The next moment this task should notify, or null. Handles repeating tasks
+ *  by scanning forward for the next matching day at the task's time. */
+function nextReminderTs(task: Task, now: number): number | null {
+  if (!task.dueTime || task.dueTime === '00:00') return null
+
+  if (isRepeating(task)) {
+    const [y, m, d] = todayStr().split('-').map(Number)
+    const tStr = todayStr()
+    for (let i = 0; i < 62; i++) {
+      const date = new Date(Date.UTC(y, m - 1, d + i))
+      const ds = date.toISOString().slice(0, 10)
+      if (!occursOn(task, ds)) continue
+      if (ds === tStr && task.lastCompleted === tStr) continue // already done today
+      const ts = new Date(`${ds}T${task.dueTime}:00`).getTime()
+      if (!Number.isNaN(ts) && ts > now) return ts
+    }
+    return null
+  }
+
+  if (!task.dueDate) return null
   const ts = new Date(`${task.dueDate}T${task.dueTime}:00`).getTime()
-  return Number.isNaN(ts) ? null : ts
+  return !Number.isNaN(ts) && ts > now ? ts : null
 }
 
 async function supportsTriggers(): Promise<boolean> {
@@ -87,8 +110,8 @@ export async function syncReminders(tasks: Task[]): Promise<void> {
 
   const wanted = new Map<string, number>()
   for (const t of tasks) {
-    if (t.done) continue
-    const ts = dueTimestamp(t)
+    if (!isRepeating(t) && t.done) continue
+    const ts = nextReminderTs(t, now)
     if (ts != null && ts > now) wanted.set(t.id, ts)
   }
 

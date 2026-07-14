@@ -88,7 +88,11 @@ export function nextDate(dateStr: string, repeat: Repeat, repeatDays?: number[])
 export function repeatLabel(repeat?: Repeat, repeatDays?: number[]): string {
   switch (repeat) {
     case 'daily':   return 'Daily'
-    case 'weekly':  return 'Weekly'
+    case 'weekly':
+      // Weekly on specific weekdays reads as the day list; otherwise "Weekly".
+      if (repeatDays && repeatDays.length && repeatDays.length < 7)
+        return WEEK_ORDER.filter(d => repeatDays.includes(d)).map(d => WEEKDAY_SHORT[d]).join(', ')
+      return 'Weekly'
     case 'monthly': return 'Monthly'
     case 'custom': {
       if (!repeatDays || !repeatDays.length) return 'Repeat'
@@ -115,7 +119,11 @@ export function occursOn(task: Task, dateStr: string): boolean {
   switch (task.repeat) {
     case 'daily':   return true
     case 'custom':  return !!task.repeatDays?.includes(d.getDay())
-    case 'weekly':  return d.getDay() === anchor.getDay()
+    // Weekly: on the chosen weekdays, or the start-date weekday if none chosen.
+    case 'weekly': {
+      const days = task.repeatDays?.length ? task.repeatDays : [anchor.getDay()]
+      return days.includes(d.getDay())
+    }
     case 'monthly': return d.getDate() === anchor.getDate()
     default:        return false
   }
@@ -241,7 +249,7 @@ export function reducer(state: AppState, action: Action): AppState {
         dueTime: action.task.dueTime,
         note: action.task.note?.trim() || undefined,
         repeat,
-        repeatDays: repeat === 'custom' ? action.task.repeatDays : undefined,
+        repeatDays: (repeat === 'weekly' || repeat === 'custom') ? action.task.repeatDays : undefined,
         // Non-repeating → a due date; repeating → a start date (the picked
         // date, or today if none) and an optional end (repeat-until) date+time.
         dueDate: repeating ? undefined : action.task.dueDate,

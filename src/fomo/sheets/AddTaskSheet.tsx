@@ -89,25 +89,26 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
       priority,
       note: note.trim() || undefined,
       repeat,
-      repeatDays: repeat === 'custom' ? repeatDays : undefined,
+      // Weekly carries the chosen weekdays (empty = the start-date weekday).
+      repeatDays: repeat === 'weekly' ? repeatDays : undefined,
     })
   }
   function setPreset(p: Repeat) {
     setRepeatDays([])
     setRepeat(cur => (cur === p ? 'none' : p))
   }
+  // Picking a weekday IS a weekly recurrence — narrow it to the chosen days.
   function toggleDay(day: number) {
-    setRepeatDays(days => {
-      const next = days.includes(day) ? days.filter(d => d !== day) : [...days, day]
-      setRepeat(next.length ? 'custom' : 'none')
-      return next
-    })
+    setRepeat('weekly')
+    setRepeatDays(days => (days.includes(day) ? days.filter(d => d !== day) : [...days, day]))
   }
 
   const dateStroke = dueDate ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'
   const timeStroke = dueTime ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'
   const repStroke = isRepeatSet ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'
   const priStroke = priority ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'
+  // Weekly with no explicit days defaults to the start-date's weekday.
+  const anchorWeekday = new Date((dueDate ?? new Date().toISOString().slice(0, 10)) + 'T12:00:00').getDay()
 
   return (
     <div style={{ position: 'absolute', inset: 0, zIndex: 10 }}>
@@ -268,11 +269,14 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
                 ))}
               </div>
 
-              {/* Repeat on */}
+              {/* Repeat on — weekly recurrence, on the chosen weekdays */}
+              {repeat === 'weekly' && (
+              <>
               <div style={{ ...sectionLabel, marginTop: '18px' }}>Repeat on</div>
               <div style={{ display: 'flex', gap: '6px' }}>
                 {WEEK_ORDER.map((day, i) => {
-                  const on = repeatDays.includes(day)
+                  // No explicit days → highlight the start-date weekday as the default.
+                  const on = repeatDays.length ? repeatDays.includes(day) : day === anchorWeekday
                   return (
                     <button
                       key={i}
@@ -298,6 +302,8 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
                   )
                 })}
               </div>
+              </>
+              )}
 
               {/* Repeat until — end date + occurrence time */}
               <div style={{ ...sectionLabel, marginTop: '24px' }}>Repeat until</div>

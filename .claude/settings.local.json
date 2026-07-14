@@ -67,7 +67,8 @@
       "Bash(git commit -q -m 'Rename repeat end-date chip to '\\\\''Repeat until'\\\\'' *)",
       "Bash(git commit -q -m 'Restructure Add Task sheet to Date/Hour/Repeat/Priority + repeat panel *)",
       "Bash(git commit -q -m 'Use Date/Hour as repeating start + occurrence time; gate until-hour *)",
-      "Bash(git commit -q -m 'Treat weekday selection as weekly recurrence *)"
+      "Bash(git commit -q -m 'Treat weekday selection as weekly recurrence *)",
+      "Bash(git commit -q -m 'Always show Repeat-on pills; Weekly needs no day selection *)"
     ]
   }
 }

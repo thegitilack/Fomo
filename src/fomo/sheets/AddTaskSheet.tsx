@@ -269,14 +269,14 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
                 ))}
               </div>
 
-              {/* Repeat on — weekly recurrence, on the chosen weekdays */}
-              {repeat === 'weekly' && (
-              <>
+              {/* Repeat on — selecting a day makes the task weekly */}
               <div style={{ ...sectionLabel, marginTop: '18px' }}>Repeat on</div>
               <div style={{ display: 'flex', gap: '6px' }}>
                 {WEEK_ORDER.map((day, i) => {
-                  // No explicit days → highlight the start-date weekday as the default.
-                  const on = repeatDays.length ? repeatDays.includes(day) : day === anchorWeekday
+                  // Weekly with no explicit days defaults to the start-date weekday.
+                  const on = repeatDays.length
+                    ? repeatDays.includes(day)
+                    : repeat === 'weekly' && day === anchorWeekday
                   return (
                     <button
                       key={i}
@@ -302,8 +302,6 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
                   )
                 })}
               </div>
-              </>
-              )}
 
               {/* Repeat until — end date + occurrence time */}
               <div style={{ ...sectionLabel, marginTop: '24px' }}>Repeat until</div>

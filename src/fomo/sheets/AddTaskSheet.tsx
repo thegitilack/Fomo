@@ -1,41 +1,12 @@
 import { useState, useRef, useEffect } from 'react'
-import { Chip } from '../components/Chip'
 import { Icon } from '../components/Icon'
-import { formatMeta, repeatLabel, WEEK_ORDER, weekdayLabel, type Repeat, type NewTask } from '../state/store'
-import { ensurePermission } from '../state/reminders'
+import { type Repeat, type NewTask } from '../state/store'
+import { TaskOptions, optionSectionLabel, type TaskOptionsValue } from './TaskOptions'
 
 interface AddTaskSheetProps {
   onClose: () => void
   onSubmit: (task: NewTask) => void
 }
-
-const overlayInput: React.CSSProperties = {
-  position: 'absolute',
-  inset: 0,
-  width: '100%',
-  height: '100%',
-  opacity: 0,
-  border: 0,
-  padding: 0,
-  margin: 0,
-  cursor: 'pointer',
-  colorScheme: 'dark',
-}
-
-const sectionLabel: React.CSSProperties = {
-  fontFamily: 'var(--fomo-font-mono)',
-  fontSize: '11px',
-  letterSpacing: '0.16em',
-  textTransform: 'uppercase',
-  color: 'var(--fomo-text-muted)',
-  marginBottom: '10px',
-}
-
-const PRESETS: { key: Repeat; label: string }[] = [
-  { key: 'daily', label: 'Daily' },
-  { key: 'weekly', label: 'Weekly' },
-  { key: 'monthly', label: 'Monthly' },
-]
 
 export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
   const [value, setValue] = useState('')
@@ -93,20 +64,15 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
       repeatDays: repeat === 'weekly' ? repeatDays : undefined,
     })
   }
-  function setPreset(p: Repeat) {
-    setRepeatDays([])
-    setRepeat(cur => (cur === p ? 'none' : p))
+  function applyPatch(p: Partial<TaskOptionsValue>) {
+    if ('date' in p) setDueDate(p.date)
+    if ('time' in p) setDueTime(p.time)
+    if ('repeat' in p) setRepeat(p.repeat!)
+    if ('repeatDays' in p) setRepeatDays(p.repeatDays!)
+    if ('endDate' in p) setEndDate(p.endDate)
+    if ('endTime' in p) setEndTime(p.endTime)
+    if ('priority' in p) setPriority(p.priority!)
   }
-  // Picking a weekday IS a weekly recurrence — narrow it to the chosen days.
-  function toggleDay(day: number) {
-    setRepeat('weekly')
-    setRepeatDays(days => (days.includes(day) ? days.filter(d => d !== day) : [...days, day]))
-  }
-
-  const dateStroke = dueDate ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'
-  const timeStroke = dueTime ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'
-  const repStroke = isRepeatSet ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'
-  const priStroke = priority ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'
 
   return (
     <div style={{ position: 'absolute', inset: 0, zIndex: 10 }}>
@@ -198,148 +164,17 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
             </button>
           </div>
 
-          {/* Chip row: Date, Hour, Repeat, Priority */}
-          <div style={{ display: 'flex', gap: '9px', marginTop: '18px', overflowX: 'auto' }}>
-            {/* Date — one-off due date, or the repeating start/anchor date */}
-            <span style={{ position: 'relative', display: 'inline-flex', flex: 'none' }}>
-              <Chip
-                label={dueDate ? (formatMeta(dueDate) ?? 'Date') : 'Date'}
-                active={!!dueDate}
-                icon={<Icon name="calendar" size={13} stroke={dateStroke} />}
-              />
-              <input
-                type="date"
-                aria-label="Date"
-                tabIndex={-1}
-                value={dueDate ?? ''}
-                onChange={e => setDueDate(e.target.value || undefined)}
-                onBlur={() => inputRef.current?.focus()}
-                style={overlayInput}
-              />
-            </span>
-
-            {/* Hour — one-off due time, or the per-occurrence time */}
-            <span style={{ position: 'relative', display: 'inline-flex', flex: 'none' }}>
-              <Chip
-                label={dueTime ? (formatMeta(undefined, dueTime) ?? 'Hour') : 'Hour'}
-                active={!!dueTime}
-                icon={<Icon name="clock" size={13} stroke={timeStroke} />}
-              />
-              <input
-                type="time"
-                aria-label="Hour"
-                tabIndex={-1}
-                value={dueTime ?? ''}
-                onChange={e => { setDueTime(e.target.value || undefined); if (e.target.value) void ensurePermission() }}
-                onBlur={() => inputRef.current?.focus()}
-                style={overlayInput}
-              />
-            </span>
-
-            <Chip
-              label={repeatLabel(repeat, repeatDays)}
-              active={isRepeatSet}
-              icon={<Icon name="repeat" size={13} stroke={repStroke} />}
-              onClick={() => setExpanded(x => !x)}
-            />
-
-            <Chip
-              label="Priority"
-              active={priority}
-              icon={<Icon name="flag" size={13} stroke={priStroke} />}
-              onClick={() => setPriority(p => !p)}
-            />
-          </div>
-
-          {/* Expanded options */}
-          {expanded && (
-            <div style={{ marginTop: '24px' }}>
-              {/* Repeat */}
-              <div style={sectionLabel}>Repeat</div>
-              <div style={{ display: 'flex', gap: '9px', flexWrap: 'wrap' }}>
-                {PRESETS.map(p => (
-                  <Chip
-                    key={p.key}
-                    label={p.label}
-                    active={repeat === p.key}
-                    onClick={() => setPreset(p.key)}
-                  />
-                ))}
-              </div>
-
-              {/* Repeat on — selecting a day makes the task weekly */}
-              <div style={{ ...sectionLabel, marginTop: '18px' }}>Repeat on</div>
-              <div style={{ display: 'flex', gap: '6px' }}>
-                {WEEK_ORDER.map((day, i) => {
-                  // Pills reflect only explicitly chosen days — never auto-filled.
-                  const on = repeatDays.includes(day)
-                  return (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => toggleDay(day)}
-                      aria-pressed={on}
-                      style={{
-                        flex: 1,
-                        height: '38px',
-                        borderRadius: '999px',
-                        border: `1px solid ${on ? 'var(--fomo-chip-active-bd)' : 'var(--fomo-border)'}`,
-                        background: on ? 'var(--fomo-chip-active-bg)' : 'transparent',
-                        color: on ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)',
-                        fontFamily: 'var(--fomo-font-sans)',
-                        fontSize: '13px',
-                        fontWeight: 500,
-                        cursor: 'pointer',
-                        transition: 'background 120ms ease, color 120ms ease, border-color 120ms ease',
-                      }}
-                    >
-                      {weekdayLabel(day)}
-                    </button>
-                  )
-                })}
-              </div>
-
-              {/* Repeat until — end date + occurrence time */}
-              <div style={{ ...sectionLabel, marginTop: '24px' }}>Repeat until</div>
-              <div style={{ display: 'flex', gap: '9px' }}>
-                <span style={{ position: 'relative', display: 'inline-flex', flex: 'none' }}>
-                  <Chip
-                    label={endDate ? (formatMeta(endDate) ?? 'Date') : 'Date'}
-                    active={!!endDate}
-                    icon={<Icon name="calendar" size={13} stroke={endDate ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'} />}
-                  />
-                  <input
-                    type="date"
-                    aria-label="Repeat until"
-                    tabIndex={-1}
-                    value={endDate ?? ''}
-                    onChange={e => setEndDate(e.target.value || undefined)}
-                    onBlur={() => inputRef.current?.focus()}
-                    style={overlayInput}
-                  />
-                </span>
-                {endDate && (
-                  <span style={{ position: 'relative', display: 'inline-flex', flex: 'none' }}>
-                    <Chip
-                      label={endTime ? (formatMeta(undefined, endTime) ?? 'Hour') : 'Hour'}
-                      active={!!endTime}
-                      icon={<Icon name="clock" size={13} stroke={endTime ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'} />}
-                    />
-                    <input
-                      type="time"
-                      aria-label="Repeat until time"
-                      tabIndex={-1}
-                      value={endTime ?? ''}
-                      onChange={e => setEndTime(e.target.value || undefined)}
-                      onBlur={() => inputRef.current?.focus()}
-                      style={overlayInput}
-                    />
-                  </span>
-                )}
-              </div>
-
+          {/* Chip row + repeat panel (shared with Task detail) */}
+          <div style={{ marginTop: '18px' }}>
+            <TaskOptions
+              value={{ date: dueDate, time: dueTime, repeat, repeatDays, endDate, endTime, priority }}
+              onChange={applyPatch}
+              expanded={expanded}
+              onToggleExpanded={() => setExpanded(x => !x)}
+              onPickerBlur={() => inputRef.current?.focus()}
+            >
               {/* Note */}
-              <div style={{ ...sectionLabel, marginTop: '24px' }}>Note</div>
+              <div style={{ ...optionSectionLabel, marginTop: '24px' }}>Note</div>
               <textarea
                 value={note}
                 onChange={e => setNote(e.target.value)}
@@ -361,8 +196,8 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
                   outline: 'none',
                 }}
               />
-            </div>
-          )}
+            </TaskOptions>
+          </div>
         </div>
       </div>
     </div>

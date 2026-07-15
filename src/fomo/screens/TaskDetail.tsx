@@ -1,12 +1,9 @@
 import { useState } from 'react'
-import type { Task, Repeat } from '../state/store'
-import { formatMeta, repeatLabel, isDoneToday } from '../state/store'
-import { ensurePermission } from '../state/reminders'
+import type { Task } from '../state/store'
+import { isRepeating, isDoneToday } from '../state/store'
 import { Checkbox } from '../components/Checkbox'
-import { Chip } from '../components/Chip'
 import { Icon } from '../components/Icon'
-
-const REPEAT_CYCLE: Repeat[] = ['none', 'daily', 'weekly', 'monthly']
+import { TaskOptions, type TaskOptionsValue } from '../sheets/TaskOptions'
 
 interface TaskDetailProps {
   task: Task
@@ -18,27 +15,12 @@ interface TaskDetailProps {
   onUpdate: (patch: Partial<Task>) => void
 }
 
-const overlayInput: React.CSSProperties = {
-  position: 'absolute',
-  inset: 0,
-  width: '100%',
-  height: '100%',
-  opacity: 0,
-  border: 0,
-  padding: 0,
-  margin: 0,
-  cursor: 'pointer',
-  colorScheme: 'dark',
-}
-
 export function TaskDetail({ task, onBack, onToggleDone, onToggleFlag, onDelete, onUpdateNote, onUpdate }: TaskDetailProps) {
   const [editingNote, setEditingNote] = useState(false)
   const [noteValue, setNoteValue] = useState(task.note ?? '')
   const [editingTitle, setEditingTitle] = useState(false)
   const [titleValue, setTitleValue] = useState(task.name)
-
-  const meta = formatMeta(task.dueDate, task.dueTime)
-  const repeat = task.repeat ?? 'none'
+  const [expanded, setExpanded] = useState(false)
 
   function saveNote() {
     onUpdateNote(noteValue)
@@ -50,12 +32,33 @@ export function TaskDetail({ task, onBack, onToggleDone, onToggleFlag, onDelete,
     else setTitleValue(task.name)
     setEditingTitle(false)
   }
-  function cycleRepeat() {
-    onUpdate({ repeat: REPEAT_CYCLE[(REPEAT_CYCLE.indexOf(repeat) + 1) % REPEAT_CYCLE.length] })
-  }
 
-  const dateStroke = task.dueDate ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'
-  const repStroke = repeat !== 'none' ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'
+  // Same chip fields as Add task; map them back onto the stored task.
+  const repeating = isRepeating(task)
+  const options: TaskOptionsValue = {
+    date: repeating ? task.startDate : task.dueDate,
+    time: task.dueTime,
+    repeat: task.repeat ?? 'none',
+    repeatDays: task.repeatDays ?? [],
+    endDate: task.endDate,
+    endTime: task.endTime,
+    priority: task.priority,
+  }
+  function handleOptions(patch: Partial<TaskOptionsValue>) {
+    const v = { ...options, ...patch }
+    const rep = v.repeat !== 'none'
+    const todayISO = new Date().toISOString().slice(0, 10)
+    onUpdate({
+      repeat: v.repeat,
+      repeatDays: v.repeat === 'weekly' ? v.repeatDays : undefined,
+      dueDate: rep ? undefined : v.date,
+      startDate: rep ? (v.date ?? todayISO) : undefined,
+      dueTime: v.time,
+      endDate: rep ? v.endDate : undefined,
+      endTime: rep && v.endDate ? v.endTime : undefined,
+      priority: v.priority,
+    })
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', position: 'relative' }}>
@@ -118,50 +121,13 @@ export function TaskDetail({ task, onBack, onToggleDone, onToggleFlag, onDelete,
         )}
       </div>
 
-      {/* Chips */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '9px', padding: '0 26px', marginTop: '28px' }}>
-        <span style={{ position: 'relative', display: 'inline-flex' }}>
-          <Chip
-            label={meta ?? 'Add date'}
-            active={!!task.dueDate}
-            icon={<Icon name="calendar" size={13} stroke={dateStroke} />}
-          />
-          <input
-            type="date"
-            aria-label="Due date"
-            value={task.dueDate ?? ''}
-            onChange={e => onUpdate({ dueDate: e.target.value || undefined })}
-            style={overlayInput}
-          />
-        </span>
-        {task.dueDate && !meta?.includes(':') && (
-          <span style={{ position: 'relative', display: 'inline-flex' }}>
-            <Chip label="Add time" />
-            <input
-              type="time"
-              aria-label="Due time"
-              value={task.dueTime ?? ''}
-              onChange={e => { onUpdate({ dueTime: e.target.value || undefined }); if (e.target.value) void ensurePermission() }}
-              style={overlayInput}
-            />
-          </span>
-        )}
-        <Chip
-          label="Priority"
-          active={task.priority}
-          onClick={() => onUpdate({ priority: !task.priority })}
-        />
-        <Chip
-          label={task.flagged ? 'Flagged' : 'Flag'}
-          active={task.flagged}
-          icon={<Icon name="flag" size={13} stroke={task.flagged ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'} />}
-          onClick={onToggleFlag}
-        />
-        <Chip
-          label={repeatLabel(repeat)}
-          active={repeat !== 'none'}
-          icon={<Icon name="repeat" size={13} stroke={repStroke} />}
-          onClick={cycleRepeat}
+      {/* Chips + repeat panel (shared with Add task) */}
+      <div style={{ padding: '0 26px', marginTop: '28px' }}>
+        <TaskOptions
+          value={options}
+          onChange={handleOptions}
+          expanded={expanded}
+          onToggleExpanded={() => setExpanded(x => !x)}
         />
       </div>
 

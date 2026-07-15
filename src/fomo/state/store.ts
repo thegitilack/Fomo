@@ -312,7 +312,24 @@ export function upcomingTasks(tasks: Task[]): Map<string, Task[]> {
   for (const task of tasks) {
     if (!isRepeating(task) && task.dueDate && task.dueDate > t && !task.done) add(task.dueDate, task)
   }
+  // Within each day: timed tasks first (earliest → latest), then the rest
+  // alphabetically by name.
+  for (const list of grouped.values()) list.sort(byDayOrder)
   return grouped
+}
+
+/** A time set to something other than midnight (00:00 reads as "no time"). */
+function timeOf(task: Task): string | null {
+  return task.dueTime && task.dueTime !== '00:00' ? task.dueTime : null
+}
+
+function byDayOrder(a: Task, b: Task): number {
+  const ta = timeOf(a)
+  const tb = timeOf(b)
+  if (ta && tb) return ta.localeCompare(tb) || a.name.localeCompare(b.name)
+  if (ta) return -1
+  if (tb) return 1
+  return a.name.localeCompare(b.name)
 }
 
 export function allTasks(tasks: Task[]): Task[] {

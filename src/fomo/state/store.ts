@@ -288,7 +288,7 @@ export function todayTasks(tasks: Task[]): Task[] {
   const t = today()
   return tasks
     .filter(task => (isRepeating(task) ? occursOn(task, t) : (!task.dueDate || task.dueDate === t)))
-    .sort((a, b) => (b.flagged ? 1 : 0) - (a.flagged ? 1 : 0))
+    .sort(taskOrder)
 }
 
 /** Number of days shown in the Upcoming view (starting tomorrow). */
@@ -312,9 +312,7 @@ export function upcomingTasks(tasks: Task[]): Map<string, Task[]> {
   for (const task of tasks) {
     if (!isRepeating(task) && task.dueDate && task.dueDate > t && !task.done) add(task.dueDate, task)
   }
-  // Within each day: timed tasks first (earliest → latest), then the rest
-  // alphabetically by name.
-  for (const list of grouped.values()) list.sort(byDayOrder)
+  for (const list of grouped.values()) list.sort(taskOrder)
   return grouped
 }
 
@@ -323,7 +321,10 @@ function timeOf(task: Task): string | null {
   return task.dueTime && task.dueTime !== '00:00' ? task.dueTime : null
 }
 
-function byDayOrder(a: Task, b: Task): number {
+/** Shared task ordering across all screens:
+ *  flagged first → timed tasks (earliest → latest) → alphabetical by name. */
+export function taskOrder(a: Task, b: Task): number {
+  if (a.flagged !== b.flagged) return a.flagged ? -1 : 1
   const ta = timeOf(a)
   const tb = timeOf(b)
   if (ta && tb) return ta.localeCompare(tb) || a.name.localeCompare(b.name)
@@ -333,7 +334,7 @@ function byDayOrder(a: Task, b: Task): number {
 }
 
 export function allTasks(tasks: Task[]): Task[] {
-  return [...tasks].sort((a, b) => (b.flagged ? 1 : 0) - (a.flagged ? 1 : 0))
+  return [...tasks].sort(taskOrder)
 }
 
 // ── Meta label formatter ──────────────────────────────────────────────────────

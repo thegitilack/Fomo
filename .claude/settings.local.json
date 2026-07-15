@@ -72,7 +72,8 @@
       "Bash(git commit -q -m 'Drop anchor-day prefill; weekday selection is one-way to Weekly *)",
       "Bash(git commit -q -m 'Show repeating tasks in Upcoming at their next occurrence *)",
       "Bash(git commit -q -m 'Upcoming: show every repeating occurrence across the next 7 days *)",
-      "Bash(git commit -q -m 'Sort each Upcoming day: timed tasks first, then alphabetical *)"
+      "Bash(git commit -q -m 'Sort each Upcoming day: timed tasks first, then alphabetical *)",
+      "Bash(git commit -q -m 'Apply one shared task ordering across all screens *)"
     ]
   }
 }

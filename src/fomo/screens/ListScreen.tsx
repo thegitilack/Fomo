@@ -14,7 +14,6 @@ interface ListScreenProps {
 }
 
 export function ListScreen({ eyebrow, title, tasks, onToggle, onOpen }: ListScreenProps) {
-  const sorted = [...tasks].sort((a, b) => (b.flagged ? 1 : 0) - (a.flagged ? 1 : 0))
   const [scrolled, setScrolled] = useState(false)
 
   return (
@@ -38,7 +37,7 @@ export function ListScreen({ eyebrow, title, tasks, onToggle, onOpen }: ListScre
         style={{ flex: 1, minHeight: 0, overflowY: 'auto', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch', padding: '10px 26px 16px' }}
       >
         <TaskCardList>
-          {sorted.map(t => (
+          {tasks.map(t => (
             <TaskRowCard
               key={t.id}
               variant="filled"

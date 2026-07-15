@@ -20,8 +20,7 @@ export function TaskDetail({ task, onBack, onToggleDone, onToggleFlag, onDelete,
   const [noteValue, setNoteValue] = useState(task.note ?? '')
   const [editingTitle, setEditingTitle] = useState(false)
   const [titleValue, setTitleValue] = useState(task.name)
-  // If the task already repeats, show the Repeat panel open by default.
-  const [expanded, setExpanded] = useState(isRepeating(task))
+  const [expanded, setExpanded] = useState(false)
 
   function saveNote() {
     onUpdateNote(noteValue)

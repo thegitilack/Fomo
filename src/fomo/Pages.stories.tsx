@@ -146,7 +146,6 @@ export const TaskDetailStory: StoryObj = {
         task={DETAIL_TASK}
         onBack={() => {}}
         onToggleDone={() => {}}
-        onToggleFlag={() => {}}
         onDelete={() => {}}
         onUpdateNote={() => {}}
         onUpdate={() => {}}
@@ -208,7 +207,7 @@ export const AllPages: StoryObj = {
           node: (
             <PhoneFrame>
               <StatusBar />
-              <TaskDetail task={DETAIL_TASK} onBack={() => {}} onToggleDone={() => {}} onToggleFlag={() => {}} onDelete={() => {}} onUpdateNote={() => {}} onUpdate={() => {}} />
+              <TaskDetail task={DETAIL_TASK} onBack={() => {}} onToggleDone={() => {}} onDelete={() => {}} onUpdateNote={() => {}} onUpdate={() => {}} />
             </PhoneFrame>
           ),
         },

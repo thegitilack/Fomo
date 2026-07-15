@@ -41,7 +41,7 @@ export interface TaskOptionsValue {
   repeatDays: number[]
   endDate?: string
   endTime?: string
-  priority: boolean
+  flagged: boolean
 }
 
 interface TaskOptionsProps {
@@ -58,13 +58,13 @@ interface TaskOptionsProps {
 /** Shared Add/Edit task controls: Date · Hour · Repeat · Priority, plus the
  *  expandable Repeat / Repeat on / Repeat until panel. */
 export function TaskOptions({ value, onChange, expanded, onToggleExpanded, onPickerBlur, children }: TaskOptionsProps) {
-  const { date, time, repeat, repeatDays, endDate, endTime, priority } = value
+  const { date, time, repeat, repeatDays, endDate, endTime, flagged } = value
   const isRepeatSet = repeat !== 'none'
 
   const dateStroke = date ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'
   const timeStroke = time ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'
   const repStroke = isRepeatSet ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'
-  const priStroke = priority ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'
+  const priStroke = flagged ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'
 
   const setPreset = (p: Repeat) => onChange({ repeat: repeat === p ? 'none' : p, repeatDays: [] })
   // Picking a weekday IS a weekly recurrence — narrow it to the chosen days.
@@ -123,9 +123,9 @@ export function TaskOptions({ value, onChange, expanded, onToggleExpanded, onPic
 
         <Chip
           label="Priority"
-          active={priority}
+          active={flagged}
           icon={<Icon name="flag" size={13} stroke={priStroke} />}
-          onClick={() => onChange({ priority: !priority })}
+          onClick={() => onChange({ flagged: !flagged })}
         />
       </div>
 

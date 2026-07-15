@@ -12,7 +12,7 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
   const [value, setValue] = useState('')
   const [dueDate, setDueDate] = useState<string | undefined>()
   const [dueTime, setDueTime] = useState<string | undefined>()
-  const [priority, setPriority] = useState(false)
+  const [flagged, setFlagged] = useState(false)
   const [repeat, setRepeat] = useState<Repeat>('none')
   const [repeatDays, setRepeatDays] = useState<number[]>([])
   const [endDate, setEndDate] = useState<string | undefined>()
@@ -57,7 +57,7 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
       dueTime,
       endDate: isRepeatSet ? endDate : undefined,
       endTime: isRepeatSet && endDate ? endTime : undefined,
-      priority,
+      flagged,
       note: note.trim() || undefined,
       repeat,
       // Weekly carries the chosen weekdays (empty = the start-date weekday).
@@ -71,7 +71,7 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
     if ('repeatDays' in p) setRepeatDays(p.repeatDays!)
     if ('endDate' in p) setEndDate(p.endDate)
     if ('endTime' in p) setEndTime(p.endTime)
-    if ('priority' in p) setPriority(p.priority!)
+    if ('flagged' in p) setFlagged(p.flagged!)
   }
 
   return (
@@ -167,7 +167,7 @@ export function AddTaskSheet({ onClose, onSubmit }: AddTaskSheetProps) {
           {/* Chip row + repeat panel (shared with Task detail) */}
           <div style={{ marginTop: '18px' }}>
             <TaskOptions
-              value={{ date: dueDate, time: dueTime, repeat, repeatDays, endDate, endTime, priority }}
+              value={{ date: dueDate, time: dueTime, repeat, repeatDays, endDate, endTime, flagged }}
               onChange={applyPatch}
               expanded={expanded}
               onToggleExpanded={() => setExpanded(x => !x)}

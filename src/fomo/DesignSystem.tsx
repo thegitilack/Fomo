@@ -673,7 +673,7 @@ const PAGES: { id: string; num: string; label: string; description: string; node
     node: (
       <>
         <StatusBar />
-        <TaskDetail task={DETAIL_TASK} onBack={() => {}} onToggleDone={() => {}} onToggleFlag={() => {}} onDelete={() => {}} onUpdateNote={() => {}} onUpdate={() => {}} />
+        <TaskDetail task={DETAIL_TASK} onBack={() => {}} onToggleDone={() => {}} onDelete={() => {}} onUpdateNote={() => {}} onUpdate={() => {}} />
       </>
     ),
   },

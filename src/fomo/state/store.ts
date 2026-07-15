@@ -24,7 +24,7 @@ export interface NewTask {
   endDate?: string       // repeating: repeat-until date
   endTime?: string       // repeating: HH:MM cutoff on the repeat-until date
   dueTime?: string
-  priority?: boolean
+  flagged?: boolean
   note?: string
   repeat?: Repeat
   repeatDays?: number[]
@@ -244,8 +244,8 @@ export function reducer(state: AppState, action: Action): AppState {
         id: uid(),
         name,
         done: false,
-        flagged: false,
-        priority: action.task.priority ?? false,
+        flagged: action.task.flagged ?? false,
+        priority: false,
         dueTime: action.task.dueTime,
         note: action.task.note?.trim() || undefined,
         repeat,

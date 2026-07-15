@@ -9,13 +9,12 @@ interface TaskDetailProps {
   task: Task
   onBack: () => void
   onToggleDone: () => void
-  onToggleFlag: () => void
   onDelete: () => void
   onUpdateNote: (note: string) => void
   onUpdate: (patch: Partial<Task>) => void
 }
 
-export function TaskDetail({ task, onBack, onToggleDone, onToggleFlag, onDelete, onUpdateNote, onUpdate }: TaskDetailProps) {
+export function TaskDetail({ task, onBack, onToggleDone, onDelete, onUpdateNote, onUpdate }: TaskDetailProps) {
   const [editingNote, setEditingNote] = useState(false)
   const [noteValue, setNoteValue] = useState(task.note ?? '')
   const [editingTitle, setEditingTitle] = useState(false)
@@ -42,7 +41,7 @@ export function TaskDetail({ task, onBack, onToggleDone, onToggleFlag, onDelete,
     repeatDays: task.repeatDays ?? [],
     endDate: task.endDate,
     endTime: task.endTime,
-    priority: task.priority,
+    flagged: task.flagged,
   }
   function handleOptions(patch: Partial<TaskOptionsValue>) {
     const v = { ...options, ...patch }
@@ -56,19 +55,16 @@ export function TaskDetail({ task, onBack, onToggleDone, onToggleFlag, onDelete,
       dueTime: v.time,
       endDate: rep ? v.endDate : undefined,
       endTime: rep && v.endDate ? v.endTime : undefined,
-      priority: v.priority,
+      flagged: v.flagged,
     })
   }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', position: 'relative' }}>
       {/* Top bar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 22px 0' }}>
+      <div style={{ display: 'flex', alignItems: 'center', padding: '14px 22px 0' }}>
         <button onClick={onBack} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
           <Icon name="back" size={24} stroke="var(--fomo-text-primary)" />
-        </button>
-        <button onClick={onToggleFlag} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
-          <Icon name="flag" size={16} stroke={task.flagged ? 'var(--fomo-accent)' : 'var(--fomo-text-faint)'} />
         </button>
       </div>
 

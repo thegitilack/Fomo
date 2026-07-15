@@ -74,7 +74,12 @@
       "Bash(git commit -q -m 'Upcoming: show every repeating occurrence across the next 7 days *)",
       "Bash(git commit -q -m 'Sort each Upcoming day: timed tasks first, then alphabetical *)",
       "Bash(git commit -q -m 'Apply one shared task ordering across all screens *)",
-      "Bash(git commit -q -m 'Open the Repeat panel by default for repeating tasks in Detail *)"
+      "Bash(git commit -q -m 'Open the Repeat panel by default for repeating tasks in Detail *)",
+      "Bash(git revert *)",
+      "Bash(git commit -q -m 'Revert default-open Repeat panel; keep it collapsed in Detail *)",
+      "Bash(perl -0pi -e 's/\\\\n\\\\s*onToggleFlag=\\\\{\\\\\\(\\\\\\) => \\\\{\\\\}\\\\}//' src/fomo/Pages.stories.tsx)",
+      "Bash(perl -pi -e 's/ onToggleFlag=\\\\{\\\\\\(\\\\\\) => \\\\{\\\\}\\\\}//g' src/fomo/Pages.stories.tsx src/fomo/DesignSystem.tsx)",
+      "Bash(git commit -q -m 'Make the Priority chip drive the task flag; drop Detail'\\\\''s flag button *)"
     ]
   }
 }

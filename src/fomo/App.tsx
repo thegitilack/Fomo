@@ -61,7 +61,6 @@ export function App() {
             task={editingTask}
             onBack={() => dispatch({ type: 'CLOSE_DETAIL' })}
             onToggleDone={() => dispatch({ type: 'TOGGLE_DONE', id: editingTask.id })}
-            onToggleFlag={() => dispatch({ type: 'TOGGLE_FLAG', id: editingTask.id })}
             onDelete={() => dispatch({ type: 'DELETE_TASK', id: editingTask.id })}
             onUpdateNote={note => dispatch({ type: 'UPDATE_NOTE', id: editingTask.id, note })}
             onUpdate={patch => dispatch({ type: 'UPDATE_TASK', id: editingTask.id, patch })}

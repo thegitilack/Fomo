@@ -70,7 +70,8 @@
       "Bash(git commit -q -m 'Treat weekday selection as weekly recurrence *)",
       "Bash(git commit -q -m 'Always show Repeat-on pills; Weekly needs no day selection *)",
       "Bash(git commit -q -m 'Drop anchor-day prefill; weekday selection is one-way to Weekly *)",
-      "Bash(git commit -q -m 'Show repeating tasks in Upcoming at their next occurrence *)"
+      "Bash(git commit -q -m 'Show repeating tasks in Upcoming at their next occurrence *)",
+      "Bash(git commit -q -m 'Upcoming: show every repeating occurrence across the next 7 days *)"
     ]
   }
 }

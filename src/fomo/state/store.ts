@@ -291,34 +291,26 @@ export function todayTasks(tasks: Task[]): Task[] {
     .sort((a, b) => (b.flagged ? 1 : 0) - (a.flagged ? 1 : 0))
 }
 
-/** The next date strictly after `afterDateStr` that a repeating task occurs,
- *  respecting start/end — or null if it never occurs again. */
-export function nextOccurrence(task: Task, afterDateStr: string): string | null {
-  if (!isRepeating(task)) return null
-  const [y, m, d] = afterDateStr.split('-').map(Number)
-  for (let i = 1; i <= 366; i++) {
-    const ds = new Date(Date.UTC(y, m - 1, d + i)).toISOString().slice(0, 10)
-    if (task.endDate && ds > task.endDate) return null
-    if (occursOn(task, ds)) return ds
-  }
-  return null
-}
+/** Number of days shown in the Upcoming view (starting tomorrow). */
+export const UPCOMING_DAYS = 7
 
 export function upcomingTasks(tasks: Task[]): Map<string, Task[]> {
   const t = today()
+  const [y, m, d] = t.split('-').map(Number)
   const grouped = new Map<string, Task[]>()
   const add = (key: string, task: Task) => {
     if (!grouped.has(key)) grouped.set(key, [])
     grouped.get(key)!.push(task)
   }
+  // Repeating tasks: every occurrence across the next 7 days.
+  const repeating = tasks.filter(isRepeating)
+  for (let i = 1; i <= UPCOMING_DAYS; i++) {
+    const ds = new Date(Date.UTC(y, m - 1, d + i)).toISOString().slice(0, 10)
+    for (const task of repeating) if (occursOn(task, ds)) add(ds, task)
+  }
+  // Non-repeating tasks: their due date, if still ahead and not done.
   for (const task of tasks) {
-    if (isRepeating(task)) {
-      // Repeating tasks appear once, at their next upcoming occurrence.
-      const next = nextOccurrence(task, t)
-      if (next) add(next, task)
-    } else if (task.dueDate && task.dueDate > t && !task.done) {
-      add(task.dueDate, task)
-    }
+    if (!isRepeating(task) && task.dueDate && task.dueDate > t && !task.done) add(task.dueDate, task)
   }
   return grouped
 }

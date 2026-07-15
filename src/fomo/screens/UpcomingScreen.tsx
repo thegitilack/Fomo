@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { Task } from '../state/store'
-import { formatMeta, formatDayHeader } from '../state/store'
+import { formatMeta, formatDayHeader, isRepeating, taskMeta } from '../state/store'
 import { Eyebrow } from '../components/Eyebrow'
 import { PageTitle } from '../components/PageTitle'
 import { TaskRowCard, TaskCardList } from '../components/TaskRowCard'
@@ -59,7 +59,7 @@ export function UpcomingScreen({ grouped, onToggle, onOpen }: UpcomingScreenProp
                     key={t.id}
                     variant="filled"
                     name={t.name}
-                    meta={formatMeta(undefined, t.dueTime)}
+                    meta={isRepeating(t) ? taskMeta(t) : formatMeta(undefined, t.dueTime)}
                     priority={t.priority}
                     flagged={t.flagged}
                     done={t.done}

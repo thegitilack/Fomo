@@ -291,16 +291,34 @@ export function todayTasks(tasks: Task[]): Task[] {
     .sort((a, b) => (b.flagged ? 1 : 0) - (a.flagged ? 1 : 0))
 }
 
+/** The next date strictly after `afterDateStr` that a repeating task occurs,
+ *  respecting start/end — or null if it never occurs again. */
+export function nextOccurrence(task: Task, afterDateStr: string): string | null {
+  if (!isRepeating(task)) return null
+  const [y, m, d] = afterDateStr.split('-').map(Number)
+  for (let i = 1; i <= 366; i++) {
+    const ds = new Date(Date.UTC(y, m - 1, d + i)).toISOString().slice(0, 10)
+    if (task.endDate && ds > task.endDate) return null
+    if (occursOn(task, ds)) return ds
+  }
+  return null
+}
+
 export function upcomingTasks(tasks: Task[]): Map<string, Task[]> {
   const t = today()
-  // Repeating tasks are habit-style (they live in Today); only dated,
-  // non-repeating tasks populate Upcoming.
-  const future = tasks.filter(task => !isRepeating(task) && task.dueDate && task.dueDate > t && !task.done)
   const grouped = new Map<string, Task[]>()
-  for (const task of future) {
-    const key = task.dueDate!
+  const add = (key: string, task: Task) => {
     if (!grouped.has(key)) grouped.set(key, [])
     grouped.get(key)!.push(task)
+  }
+  for (const task of tasks) {
+    if (isRepeating(task)) {
+      // Repeating tasks appear once, at their next upcoming occurrence.
+      const next = nextOccurrence(task, t)
+      if (next) add(next, task)
+    } else if (task.dueDate && task.dueDate > t && !task.done) {
+      add(task.dueDate, task)
+    }
   }
   return grouped
 }

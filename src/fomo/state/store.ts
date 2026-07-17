@@ -322,8 +322,12 @@ function timeOf(task: Task): string | null {
 }
 
 /** Shared task ordering across all screens:
- *  flagged first → timed tasks (earliest → latest) → alphabetical by name. */
+ *  unchecked before checked → flagged first → timed (earliest → latest) →
+ *  alphabetical by name. */
 export function taskOrder(a: Task, b: Task): number {
+  const da = isDoneToday(a)
+  const db = isDoneToday(b)
+  if (da !== db) return da ? 1 : -1
   if (a.flagged !== b.flagged) return a.flagged ? -1 : 1
   const ta = timeOf(a)
   const tb = timeOf(b)

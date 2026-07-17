@@ -79,7 +79,8 @@
       "Bash(git commit -q -m 'Revert default-open Repeat panel; keep it collapsed in Detail *)",
       "Bash(perl -0pi -e 's/\\\\n\\\\s*onToggleFlag=\\\\{\\\\\\(\\\\\\) => \\\\{\\\\}\\\\}//' src/fomo/Pages.stories.tsx)",
       "Bash(perl -pi -e 's/ onToggleFlag=\\\\{\\\\\\(\\\\\\) => \\\\{\\\\}\\\\}//g' src/fomo/Pages.stories.tsx src/fomo/DesignSystem.tsx)",
-      "Bash(git commit -q -m 'Make the Priority chip drive the task flag; drop Detail'\\\\''s flag button *)"
+      "Bash(git commit -q -m 'Make the Priority chip drive the task flag; drop Detail'\\\\''s flag button *)",
+      "Bash(git commit -q -m 'Sink checked tasks to the bottom of the list *)"
     ]
   }
 }

@@ -30,13 +30,29 @@ export interface NewTask {
   repeatDays?: number[]
 }
 
-export type View = 'today' | 'upcoming' | 'all'
+export type View = 'today' | 'upcoming' | 'all' | 'goals'
+
+/** A long-term goal — something you want to do, without a schedule. */
+export interface Goal {
+  id: string
+  name: string
+  note?: string
+  done: boolean
+}
+
+export interface NewGoal {
+  name: string
+  note?: string
+}
 
 export interface AppState {
   tasks: Task[]
+  goals: Goal[]
   activeView: View
   addSheetOpen: boolean
+  addGoalSheetOpen: boolean
   editingTaskId: string | null
+  editingGoalId: string | null
   theme: 'dark' | 'light'
 }
 
@@ -47,11 +63,19 @@ export type Action =
   | { type: 'DELETE_TASK';   id: string }
   | { type: 'UPDATE_NOTE';   id: string; note: string }
   | { type: 'UPDATE_TASK';   id: string; patch: Partial<Task> }
+  | { type: 'ADD_GOAL';      goal: NewGoal }
+  | { type: 'TOGGLE_GOAL';   id: string }
+  | { type: 'DELETE_GOAL';   id: string }
+  | { type: 'UPDATE_GOAL';   id: string; patch: Partial<Goal> }
   | { type: 'SET_VIEW';      view: View }
   | { type: 'OPEN_SHEET' }
   | { type: 'CLOSE_SHEET' }
+  | { type: 'OPEN_GOAL_SHEET' }
+  | { type: 'CLOSE_GOAL_SHEET' }
   | { type: 'OPEN_DETAIL';   id: string }
   | { type: 'CLOSE_DETAIL' }
+  | { type: 'OPEN_GOAL';     id: string }
+  | { type: 'CLOSE_GOAL' }
   | { type: 'TOGGLE_THEME' }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -154,8 +178,15 @@ const TUE = new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10)
 export const INITIAL_STATE: AppState = {
   activeView: 'today',
   addSheetOpen: false,
+  addGoalSheetOpen: false,
   editingTaskId: null,
+  editingGoalId: null,
   theme: 'light',
+  goals: [
+    { id: uid(), name: 'Learn to play the piano', done: false, note: 'Start with 15 minutes a day — scales first, then a simple piece.' },
+    { id: uid(), name: 'Run a half marathon', done: false },
+    { id: uid(), name: 'Read 24 books this year', done: false },
+  ],
   tasks: [
     {
       id: uid(), name: 'Call the pharmacy before it closes',
@@ -265,6 +296,26 @@ export function reducer(state: AppState, action: Action): AppState {
       return { ...state, tasks: state.tasks.map(t => t.id === action.id ? { ...t, note: action.note } : t) }
     case 'UPDATE_TASK':
       return { ...state, tasks: state.tasks.map(t => t.id === action.id ? { ...t, ...action.patch } : t) }
+    case 'ADD_GOAL': {
+      const name = action.goal.name.trim()
+      if (!name) return state
+      const goal: Goal = { id: uid(), name, note: action.goal.note?.trim() || undefined, done: false }
+      return { ...state, goals: [goal, ...state.goals], addGoalSheetOpen: false }
+    }
+    case 'TOGGLE_GOAL':
+      return { ...state, goals: state.goals.map(g => g.id === action.id ? { ...g, done: !g.done } : g) }
+    case 'DELETE_GOAL':
+      return { ...state, goals: state.goals.filter(g => g.id !== action.id), editingGoalId: null }
+    case 'UPDATE_GOAL':
+      return { ...state, goals: state.goals.map(g => g.id === action.id ? { ...g, ...action.patch } : g) }
+    case 'OPEN_GOAL_SHEET':
+      return { ...state, addGoalSheetOpen: true }
+    case 'CLOSE_GOAL_SHEET':
+      return { ...state, addGoalSheetOpen: false }
+    case 'OPEN_GOAL':
+      return { ...state, editingGoalId: action.id }
+    case 'CLOSE_GOAL':
+      return { ...state, editingGoalId: null }
     case 'SET_VIEW':
       return { ...state, activeView: action.view }
     case 'OPEN_SHEET':
@@ -382,9 +433,18 @@ export function formatDayHeader(dateStr: string): string {
   return `${weekday} ${dayNum}`
 }
 
+/** Goals ordered for display: unchecked first, then alphabetical. */
+export function goalsList(goals: Goal[]): Goal[] {
+  return [...goals].sort((a, b) => {
+    if (a.done !== b.done) return a.done ? 1 : -1
+    return a.name.localeCompare(b.name)
+  })
+}
+
 // ── localStorage persistence ──────────────────────────────────────────────────
 
 const KEY = 'fomo-tasks-v1'
+const GOALS_KEY = 'fomo-goals-v1'
 
 export function loadTasks(): Task[] | null {
   try {
@@ -398,5 +458,20 @@ export function loadTasks(): Task[] | null {
 export function saveTasks(tasks: Task[]) {
   try {
     localStorage.setItem(KEY, JSON.stringify(tasks))
+  } catch {}
+}
+
+export function loadGoals(): Goal[] | null {
+  try {
+    const raw = localStorage.getItem(GOALS_KEY)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+
+export function saveGoals(goals: Goal[]) {
+  try {
+    localStorage.setItem(GOALS_KEY, JSON.stringify(goals))
   } catch {}
 }

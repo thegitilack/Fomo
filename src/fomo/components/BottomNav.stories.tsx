@@ -30,7 +30,7 @@ export const AllActive: Story = { args: { active: 'all' } }
 
 export const Interactive: Story = {
   render: () => {
-    const [active, setActive] = useState<'today' | 'upcoming' | 'all'>('today')
+    const [active, setActive] = useState<'today' | 'upcoming' | 'all' | 'goals'>('today')
     return <BottomNav active={active} onChange={setActive} />
   },
 }

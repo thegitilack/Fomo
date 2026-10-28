@@ -81,7 +81,8 @@
       "Bash(perl -pi -e 's/ onToggleFlag=\\\\{\\\\\\(\\\\\\) => \\\\{\\\\}\\\\}//g' src/fomo/Pages.stories.tsx src/fomo/DesignSystem.tsx)",
       "Bash(git commit -q -m 'Make the Priority chip drive the task flag; drop Detail'\\\\''s flag button *)",
       "Bash(git commit -q -m 'Sink checked tasks to the bottom of the list *)",
-      "Bash(git commit -q -m 'Add a Goals tab for long-term plans *)"
+      "Bash(git commit -q -m 'Add a Goals tab for long-term plans *)",
+      "Bash(git commit -q -m 'Move All tab to the end; append goals to the All list *)"
     ]
   }
 }

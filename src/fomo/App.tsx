@@ -143,6 +143,9 @@ export function App() {
               tasks={all}
               onToggle={id => dispatch({ type: 'TOGGLE_DONE', id })}
               onOpen={id => dispatch({ type: 'OPEN_DETAIL', id })}
+              goals={goals}
+              onToggleGoal={id => dispatch({ type: 'TOGGLE_GOAL', id })}
+              onOpenGoal={id => dispatch({ type: 'OPEN_GOAL', id })}
             />
           )}
 

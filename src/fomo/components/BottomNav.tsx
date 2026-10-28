@@ -5,8 +5,8 @@ type View = 'today' | 'upcoming' | 'all' | 'goals'
 const TABS: { id: View; label: string; icon: 'today' | 'chevron' | 'list' | 'goal' }[] = [
   { id: 'today',    label: 'Today',    icon: 'today'   },
   { id: 'upcoming', label: 'Upcoming', icon: 'chevron' },
-  { id: 'all',      label: 'All',      icon: 'list'    },
   { id: 'goals',    label: 'Goals',    icon: 'goal'    },
+  { id: 'all',      label: 'All',      icon: 'list'    },
 ]
 
 interface BottomNavProps {

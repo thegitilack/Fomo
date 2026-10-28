@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { Task } from '../state/store'
+import type { Task, Goal } from '../state/store'
 import { taskMeta, isDoneToday } from '../state/store'
 import { Eyebrow } from '../components/Eyebrow'
 import { PageTitle } from '../components/PageTitle'
@@ -11,9 +11,13 @@ interface ListScreenProps {
   tasks: Task[]
   onToggle: (id: string) => void
   onOpen: (id: string) => void
+  /** Optional goals appended at the end of the list (used on the All view). */
+  goals?: Goal[]
+  onToggleGoal?: (id: string) => void
+  onOpenGoal?: (id: string) => void
 }
 
-export function ListScreen({ eyebrow, title, tasks, onToggle, onOpen }: ListScreenProps) {
+export function ListScreen({ eyebrow, title, tasks, onToggle, onOpen, goals = [], onToggleGoal, onOpenGoal }: ListScreenProps) {
   const [scrolled, setScrolled] = useState(false)
 
   return (
@@ -48,6 +52,18 @@ export function ListScreen({ eyebrow, title, tasks, onToggle, onOpen }: ListScre
               done={isDoneToday(t)}
               onToggle={() => onToggle(t.id)}
               onOpen={() => onOpen(t.id)}
+            />
+          ))}
+          {/* Goals appended at the end of the list */}
+          {goals.map(g => (
+            <TaskRowCard
+              key={g.id}
+              variant="filled"
+              name={g.name}
+              meta={g.note || undefined}
+              done={g.done}
+              onToggle={() => onToggleGoal?.(g.id)}
+              onOpen={() => onOpenGoal?.(g.id)}
             />
           ))}
         </TaskCardList>

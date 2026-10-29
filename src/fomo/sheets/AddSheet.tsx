@@ -243,9 +243,9 @@ export function AddSheet({ initialKind = 'task', onClose, onSubmitTask, onSubmit
               {/* Note chip — expands into the note field, like the task chips */}
               <div style={{ display: 'flex', gap: '9px' }}>
                 <Chip
-                  label="Note"
+                  label="Add note"
                   active={goalNoteOpen || !!note}
-                  icon={<Icon name="note" size={13} stroke={goalNoteOpen || note ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'} />}
+                  icon={<Icon name="plus" size={13} stroke={goalNoteOpen || note ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'} />}
                   onClick={() => setGoalNoteOpen(x => !x)}
                 />
               </div>

@@ -82,7 +82,11 @@
       "Bash(git commit -q -m 'Make the Priority chip drive the task flag; drop Detail'\\\\''s flag button *)",
       "Bash(git commit -q -m 'Sink checked tasks to the bottom of the list *)",
       "Bash(git commit -q -m 'Add a Goals tab for long-term plans *)",
-      "Bash(git commit -q -m 'Move All tab to the end; append goals to the All list *)"
+      "Bash(git commit -q -m 'Move All tab to the end; append goals to the All list *)",
+      "Bash(perl -pi -e \"s/import \\\\{ AddTaskSheet \\\\} from '.\\\\/sheets\\\\/AddTaskSheet'/import { AddSheet } from '.\\\\/sheets\\\\/AddSheet'/\" src/fomo/Pages.stories.tsx src/fomo/DesignSystem.tsx)",
+      "Bash(perl -pi -e 's/<AddTaskSheet onClose=\\\\{\\\\\\(\\\\\\) => \\\\{\\\\}\\\\} onSubmit=\\\\{\\\\\\(\\\\\\) => \\\\{\\\\}\\\\} \\\\/>/<AddSheet onClose={\\(\\) => {}} onSubmitTask={\\(\\) => {}} onSubmitGoal={\\(\\) => {}} \\\\/>/g' src/fomo/Pages.stories.tsx src/fomo/DesignSystem.tsx)",
+      "Bash(rm src/fomo/sheets/AddTaskSheet.tsx src/fomo/sheets/AddGoalSheet.tsx)",
+      "Bash(git commit -q -m 'Merge Add Task/Goal into one modal with a Task/Goal tab *)"
     ]
   }
 }

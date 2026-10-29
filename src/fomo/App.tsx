@@ -13,8 +13,7 @@ import { GoalsScreen } from './screens/GoalsScreen'
 import { EmptyState } from './screens/EmptyState'
 import { TaskDetail } from './screens/TaskDetail'
 import { GoalDetail } from './screens/GoalDetail'
-import { AddTaskSheet } from './sheets/AddTaskSheet'
-import { AddGoalSheet } from './sheets/AddGoalSheet'
+import { AddSheet } from './sheets/AddSheet'
 
 function todayEyebrow(): string {
   const now = new Date()
@@ -160,7 +159,7 @@ export function App() {
           {/* FAB + Bottom nav */}
           <div style={{ position: 'relative' }}>
             <div style={{ position: 'absolute', right: 24, bottom: 'calc(76px + env(safe-area-inset-bottom))', zIndex: 2 }}>
-              <FAB onClick={() => dispatch({ type: state.activeView === 'goals' ? 'OPEN_GOAL_SHEET' : 'OPEN_SHEET' })} />
+              <FAB onClick={() => dispatch({ type: 'OPEN_SHEET', kind: state.activeView === 'goals' ? 'goal' : 'task' })} />
             </div>
             <BottomNav
               active={state.activeView}
@@ -168,19 +167,13 @@ export function App() {
             />
           </div>
 
-          {/* Add task sheet */}
+          {/* Add sheet (Task / Goal) */}
           {state.addSheetOpen && (
-            <AddTaskSheet
+            <AddSheet
+              initialKind={state.addSheetKind}
               onClose={() => dispatch({ type: 'CLOSE_SHEET' })}
-              onSubmit={task => dispatch({ type: 'ADD_TASK', task })}
-            />
-          )}
-
-          {/* Add goal sheet */}
-          {state.addGoalSheetOpen && (
-            <AddGoalSheet
-              onClose={() => dispatch({ type: 'CLOSE_GOAL_SHEET' })}
-              onSubmit={goal => dispatch({ type: 'ADD_GOAL', goal })}
+              onSubmitTask={task => dispatch({ type: 'ADD_TASK', task })}
+              onSubmitGoal={goal => dispatch({ type: 'ADD_GOAL', goal })}
             />
           )}
         </>

@@ -12,7 +12,7 @@ import { ListScreen } from './screens/ListScreen'
 import { UpcomingScreen } from './screens/UpcomingScreen'
 import { EmptyState } from './screens/EmptyState'
 import { TaskDetail } from './screens/TaskDetail'
-import { AddTaskSheet } from './sheets/AddTaskSheet'
+import { AddSheet } from './sheets/AddSheet'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -687,7 +687,7 @@ const PAGES: { id: string; num: string; label: string; description: string; node
         <StatusBar />
         <ListScreen eyebrow="SAT · 27 JUNE" title="Today" tasks={SAMPLE_TASKS.slice(0,3)} onToggle={() => {}} onOpen={() => {}} />
         <NavWithFAB active="today" />
-        <AddTaskSheet onClose={() => {}} onSubmit={() => {}} />
+        <AddSheet onClose={() => {}} onSubmitTask={() => {}} onSubmitGoal={() => {}} />
       </>
     ),
   },

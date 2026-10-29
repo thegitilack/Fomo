@@ -50,7 +50,7 @@ export interface AppState {
   goals: Goal[]
   activeView: View
   addSheetOpen: boolean
-  addGoalSheetOpen: boolean
+  addSheetKind: 'task' | 'goal'
   editingTaskId: string | null
   editingGoalId: string | null
   theme: 'dark' | 'light'
@@ -68,10 +68,8 @@ export type Action =
   | { type: 'DELETE_GOAL';   id: string }
   | { type: 'UPDATE_GOAL';   id: string; patch: Partial<Goal> }
   | { type: 'SET_VIEW';      view: View }
-  | { type: 'OPEN_SHEET' }
+  | { type: 'OPEN_SHEET';    kind: 'task' | 'goal' }
   | { type: 'CLOSE_SHEET' }
-  | { type: 'OPEN_GOAL_SHEET' }
-  | { type: 'CLOSE_GOAL_SHEET' }
   | { type: 'OPEN_DETAIL';   id: string }
   | { type: 'CLOSE_DETAIL' }
   | { type: 'OPEN_GOAL';     id: string }
@@ -178,7 +176,7 @@ const TUE = new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10)
 export const INITIAL_STATE: AppState = {
   activeView: 'today',
   addSheetOpen: false,
-  addGoalSheetOpen: false,
+  addSheetKind: 'task',
   editingTaskId: null,
   editingGoalId: null,
   theme: 'light',
@@ -300,7 +298,7 @@ export function reducer(state: AppState, action: Action): AppState {
       const name = action.goal.name.trim()
       if (!name) return state
       const goal: Goal = { id: uid(), name, note: action.goal.note?.trim() || undefined, done: false }
-      return { ...state, goals: [goal, ...state.goals], addGoalSheetOpen: false }
+      return { ...state, goals: [goal, ...state.goals], addSheetOpen: false }
     }
     case 'TOGGLE_GOAL':
       return { ...state, goals: state.goals.map(g => g.id === action.id ? { ...g, done: !g.done } : g) }
@@ -308,10 +306,6 @@ export function reducer(state: AppState, action: Action): AppState {
       return { ...state, goals: state.goals.filter(g => g.id !== action.id), editingGoalId: null }
     case 'UPDATE_GOAL':
       return { ...state, goals: state.goals.map(g => g.id === action.id ? { ...g, ...action.patch } : g) }
-    case 'OPEN_GOAL_SHEET':
-      return { ...state, addGoalSheetOpen: true }
-    case 'CLOSE_GOAL_SHEET':
-      return { ...state, addGoalSheetOpen: false }
     case 'OPEN_GOAL':
       return { ...state, editingGoalId: action.id }
     case 'CLOSE_GOAL':
@@ -319,7 +313,7 @@ export function reducer(state: AppState, action: Action): AppState {
     case 'SET_VIEW':
       return { ...state, activeView: action.view }
     case 'OPEN_SHEET':
-      return { ...state, addSheetOpen: true }
+      return { ...state, addSheetOpen: true, addSheetKind: action.kind }
     case 'CLOSE_SHEET':
       return { ...state, addSheetOpen: false }
     case 'OPEN_DETAIL':

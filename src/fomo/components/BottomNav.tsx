@@ -2,11 +2,11 @@ import { Icon } from './Icon'
 
 type View = 'today' | 'upcoming' | 'all' | 'goals'
 
-const TABS: { id: View; label: string; icon: 'today' | 'chevron' | 'list' | 'goal' }[] = [
-  { id: 'today',    label: 'Today',    icon: 'today'   },
-  { id: 'upcoming', label: 'Upcoming', icon: 'chevron' },
-  { id: 'goals',    label: 'Goals',    icon: 'goal'    },
-  { id: 'all',      label: 'All',      icon: 'list'    },
+const TABS: { id: View; label: string; icon: 'today' | 'tasks' | 'list' | 'goal' }[] = [
+  { id: 'today',    label: 'Today', icon: 'today' },
+  { id: 'upcoming', label: 'Tasks', icon: 'tasks' },
+  { id: 'goals',    label: 'Goals', icon: 'goal'  },
+  { id: 'all',      label: 'All',   icon: 'list'  },
 ]
 
 interface BottomNavProps {

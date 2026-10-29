@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react'
 
-type IconName = 'today' | 'chevron' | 'list' | 'plus' | 'back' | 'check' | 'flag' | 'calendar' | 'clock' | 'repeat' | 'note' | 'goal' | 'loading'
+type IconName = 'today' | 'chevron' | 'list' | 'plus' | 'back' | 'check' | 'flag' | 'calendar' | 'clock' | 'repeat' | 'note' | 'goal' | 'tasks' | 'loading'
 
 interface IconDef {
   vb: string
@@ -66,6 +66,13 @@ const ICONS: Record<IconName, IconDef> = {
   note: {
     vb: '0 0 14 14',
     el: (c, sw) => <path d="M3 3.5h8M3 7h8M3 10.5h5" stroke={c} strokeWidth={sw} strokeLinecap="round" />,
+  },
+  tasks: {
+    vb: '0 0 24 24',
+    el: (c, sw) => (<>
+      <rect x="4" y="4" width="16" height="16" rx="4.5" stroke={c} strokeWidth={sw} fill="none" />
+      <path d="M8.5 12.3l2.4 2.4 4.6-5" stroke={c} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+    </>),
   },
   goal: {
     vb: '0 0 24 24',

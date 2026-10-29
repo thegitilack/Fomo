@@ -1,16 +1,15 @@
 import { useReducer, useEffect } from 'react'
 import {
   reducer, INITIAL_STATE,
-  todayTasks, upcomingTasks, allTasks, goalsList,
+  todayTasks, allTasks, goalsList,
   loadTasks, saveTasks, loadGoals, saveGoals,
 } from './state/store'
 import { syncReminders } from './state/reminders'
 import { BottomNav } from './components/BottomNav'
 import { FAB } from './components/FAB'
 import { ListScreen } from './screens/ListScreen'
-import { UpcomingScreen } from './screens/UpcomingScreen'
+import { TodayScreen } from './screens/TodayScreen'
 import { GoalsScreen } from './screens/GoalsScreen'
-import { EmptyState } from './screens/EmptyState'
 import { TaskDetail } from './screens/TaskDetail'
 import { GoalDetail } from './screens/GoalDetail'
 import { AddSheet } from './sheets/AddSheet'
@@ -42,7 +41,6 @@ export function App() {
   }, [state.goals])
 
   const today = todayTasks(state.tasks)
-  const upcoming = upcomingTasks(state.tasks)
   const all = allTasks(state.tasks)
   const goals = goalsList(state.goals)
   const editingTask = state.editingTaskId ? state.tasks.find(t => t.id === state.editingTaskId) : null
@@ -114,22 +112,22 @@ export function App() {
 
           {/* Main content */}
           {state.activeView === 'today' && (
-            today.length === 0
-              ? <EmptyState eyebrow={todayEyebrow()} />
-              : (
-                <ListScreen
-                  eyebrow={todayEyebrow()}
-                  title="Today"
-                  tasks={today}
-                  onToggle={id => dispatch({ type: 'TOGGLE_DONE', id })}
-                  onOpen={id => dispatch({ type: 'OPEN_DETAIL', id })}
-                />
-              )
+            <TodayScreen
+              eyebrow={todayEyebrow()}
+              tasks={today}
+              goals={goals}
+              onToggleTask={id => dispatch({ type: 'TOGGLE_DONE', id })}
+              onOpenTask={id => dispatch({ type: 'OPEN_DETAIL', id })}
+              onToggleGoal={id => dispatch({ type: 'TOGGLE_GOAL', id })}
+              onOpenGoal={id => dispatch({ type: 'OPEN_GOAL', id })}
+            />
           )}
 
           {state.activeView === 'upcoming' && (
-            <UpcomingScreen
-              grouped={upcoming}
+            <ListScreen
+              eyebrow="Everything"
+              title="Tasks"
+              tasks={all}
               onToggle={id => dispatch({ type: 'TOGGLE_DONE', id })}
               onOpen={id => dispatch({ type: 'OPEN_DETAIL', id })}
             />

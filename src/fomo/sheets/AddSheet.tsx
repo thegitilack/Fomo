@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Icon } from '../components/Icon'
+import { Chip } from '../components/Chip'
 import { type Repeat, type NewTask, type NewGoal } from '../state/store'
 import { TaskOptions, optionSectionLabel, type TaskOptionsValue } from './TaskOptions'
 
@@ -43,6 +44,7 @@ export function AddSheet({ initialKind = 'task', onClose, onSubmitTask, onSubmit
   const [endDate, setEndDate] = useState<string | undefined>()
   const [endTime, setEndTime] = useState<string | undefined>()
   const [expanded, setExpanded] = useState(false)
+  const [goalNoteOpen, setGoalNoteOpen] = useState(false)
   const [kbOffset, setKbOffset] = useState(0)
   const inputRef = useRef<HTMLDivElement>(null)
 
@@ -238,14 +240,27 @@ export function AddSheet({ initialKind = 'task', onClose, onSubmitTask, onSubmit
             </div>
           ) : (
             <div style={{ marginTop: '18px' }}>
-              <div style={optionSectionLabel}>Note</div>
-              <textarea
-                value={note}
-                onChange={e => setNote(e.target.value)}
-                placeholder="Why it matters, or a first step…"
-                rows={3}
-                style={noteStyle}
-              />
+              {/* Note chip — expands into the note field, like the task chips */}
+              <div style={{ display: 'flex', gap: '9px' }}>
+                <Chip
+                  label="Note"
+                  active={goalNoteOpen || !!note}
+                  icon={<Icon name="note" size={13} stroke={goalNoteOpen || note ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)'} />}
+                  onClick={() => setGoalNoteOpen(x => !x)}
+                />
+              </div>
+              {goalNoteOpen && (
+                <div style={{ marginTop: '24px' }}>
+                  <div style={optionSectionLabel}>Note</div>
+                  <textarea
+                    value={note}
+                    onChange={e => setNote(e.target.value)}
+                    placeholder="Why it matters, or a first step…"
+                    rows={3}
+                    style={noteStyle}
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -86,7 +86,8 @@
       "Bash(perl -pi -e \"s/import \\\\{ AddTaskSheet \\\\} from '.\\\\/sheets\\\\/AddTaskSheet'/import { AddSheet } from '.\\\\/sheets\\\\/AddSheet'/\" src/fomo/Pages.stories.tsx src/fomo/DesignSystem.tsx)",
       "Bash(perl -pi -e 's/<AddTaskSheet onClose=\\\\{\\\\\\(\\\\\\) => \\\\{\\\\}\\\\} onSubmit=\\\\{\\\\\\(\\\\\\) => \\\\{\\\\}\\\\} \\\\/>/<AddSheet onClose={\\(\\) => {}} onSubmitTask={\\(\\) => {}} onSubmitGoal={\\(\\) => {}} \\\\/>/g' src/fomo/Pages.stories.tsx src/fomo/DesignSystem.tsx)",
       "Bash(rm src/fomo/sheets/AddTaskSheet.tsx src/fomo/sheets/AddGoalSheet.tsx)",
-      "Bash(git commit -q -m 'Merge Add Task/Goal into one modal with a Task/Goal tab *)"
+      "Bash(git commit -q -m 'Merge Add Task/Goal into one modal with a Task/Goal tab *)",
+      "Bash(git commit -q -m 'Goal note starts as a chip that expands into the field *)"
     ]
   }
 }

@@ -15,6 +15,7 @@ export interface Task {
   endDate?: string       // repeating: repeat-until date (inclusive); undefined = forever
   endTime?: string       // repeating: HH:MM cutoff on the repeat-until date
   lastCompleted?: string // repeating: the day (YYYY-MM-DD) it was last ticked off
+  completedAt?: string   // non-repeating: the day (YYYY-MM-DD) it was checked off
 }
 
 export interface NewTask {
@@ -38,6 +39,7 @@ export interface Goal {
   name: string
   note?: string
   done: boolean
+  completedAt?: string   // the day (YYYY-MM-DD) it was checked off
 }
 
 export interface NewGoal {
@@ -258,7 +260,8 @@ export function reducer(state: AppState, action: Action): AppState {
             // per-day completion: toggle today in/out of "done"
             return { ...task, lastCompleted: task.lastCompleted === t ? undefined : t }
           }
-          return { ...task, done: !task.done }
+          const done = !task.done
+          return { ...task, done, completedAt: done ? t : undefined }
         }),
       }
     }
@@ -301,7 +304,14 @@ export function reducer(state: AppState, action: Action): AppState {
       return { ...state, goals: [goal, ...state.goals], addSheetOpen: false }
     }
     case 'TOGGLE_GOAL':
-      return { ...state, goals: state.goals.map(g => g.id === action.id ? { ...g, done: !g.done } : g) }
+      return {
+        ...state,
+        goals: state.goals.map(g => {
+          if (g.id !== action.id) return g
+          const done = !g.done
+          return { ...g, done, completedAt: done ? today() : undefined }
+        }),
+      }
     case 'DELETE_GOAL':
       return { ...state, goals: state.goals.filter(g => g.id !== action.id), editingGoalId: null }
     case 'UPDATE_GOAL':
@@ -332,8 +342,20 @@ export function reducer(state: AppState, action: Action): AppState {
 export function todayTasks(tasks: Task[]): Task[] {
   const t = today()
   return tasks
-    .filter(task => (isRepeating(task) ? occursOn(task, t) : (!task.dueDate || task.dueDate === t)))
+    .filter(task => {
+      if (isRepeating(task)) return occursOn(task, t)
+      if (task.dueDate && task.dueDate !== t) return false
+      // A checked-off task lingers in Today only on the day it was completed.
+      if (task.done && task.completedAt !== t) return false
+      return true
+    })
     .sort(taskOrder)
+}
+
+/** Goals for the Today view: open ones, plus any completed today. */
+export function todayGoals(goals: Goal[]): Goal[] {
+  const t = today()
+  return goalsList(goals).filter(g => !g.done || g.completedAt === t)
 }
 
 /** A time set to something other than midnight (00:00 reads as "no time"). */

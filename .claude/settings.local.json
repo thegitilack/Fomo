@@ -89,7 +89,8 @@
       "Bash(git commit -q -m 'Merge Add Task/Goal into one modal with a Task/Goal tab *)",
       "Bash(git commit -q -m 'Goal note starts as a chip that expands into the field *)",
       "Bash(git commit -q -m 'Label the goal note chip '\\\\''Add note'\\\\'' with a plus icon *)",
-      "Bash(git commit -q -m 'Today combines tasks + goals in sections; rename Upcoming to Tasks \\(all tasks\\) *)"
+      "Bash(git commit -q -m 'Today combines tasks + goals in sections; rename Upcoming to Tasks \\(all tasks\\) *)",
+      "Bash(git commit -q -m 'Today: keep a completed task/goal only on the day it was completed *)"
     ]
   }
 }

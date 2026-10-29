@@ -1,7 +1,7 @@
 import { useReducer, useEffect } from 'react'
 import {
   reducer, INITIAL_STATE,
-  todayTasks, allTasks, goalsList,
+  todayTasks, allTasks, goalsList, todayGoals,
   loadTasks, saveTasks, loadGoals, saveGoals,
 } from './state/store'
 import { syncReminders } from './state/reminders'
@@ -115,7 +115,7 @@ export function App() {
             <TodayScreen
               eyebrow={todayEyebrow()}
               tasks={today}
-              goals={goals}
+              goals={todayGoals(state.goals)}
               onToggleTask={id => dispatch({ type: 'TOGGLE_DONE', id })}
               onOpenTask={id => dispatch({ type: 'OPEN_DETAIL', id })}
               onToggleGoal={id => dispatch({ type: 'TOGGLE_GOAL', id })}

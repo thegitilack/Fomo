@@ -71,6 +71,7 @@ export function App() {
           onDelete={() => dispatch({ type: 'DELETE_TASK', id: editingTask.id })}
           onUpdateNote={note => dispatch({ type: 'UPDATE_NOTE', id: editingTask.id, note })}
           onUpdate={patch => dispatch({ type: 'UPDATE_TASK', id: editingTask.id, patch })}
+          onConvertToGoal={() => dispatch({ type: 'CONVERT_TASK_TO_GOAL', id: editingTask.id })}
         />
       ) : editingGoal ? (
         <GoalDetail
@@ -79,6 +80,7 @@ export function App() {
           onToggleDone={() => dispatch({ type: 'TOGGLE_GOAL', id: editingGoal.id })}
           onDelete={() => dispatch({ type: 'DELETE_GOAL', id: editingGoal.id })}
           onUpdate={patch => dispatch({ type: 'UPDATE_GOAL', id: editingGoal.id, patch })}
+          onConvertToTask={() => dispatch({ type: 'CONVERT_GOAL_TO_TASK', id: editingGoal.id })}
         />
       ) : (
         <>

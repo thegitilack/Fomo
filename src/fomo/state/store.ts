@@ -69,6 +69,8 @@ export type Action =
   | { type: 'TOGGLE_GOAL';   id: string }
   | { type: 'DELETE_GOAL';   id: string }
   | { type: 'UPDATE_GOAL';   id: string; patch: Partial<Goal> }
+  | { type: 'CONVERT_TASK_TO_GOAL'; id: string }
+  | { type: 'CONVERT_GOAL_TO_TASK'; id: string }
   | { type: 'SET_VIEW';      view: View }
   | { type: 'OPEN_SHEET';    kind: 'task' | 'goal' }
   | { type: 'CLOSE_SHEET' }
@@ -316,6 +318,34 @@ export function reducer(state: AppState, action: Action): AppState {
       return { ...state, goals: state.goals.filter(g => g.id !== action.id), editingGoalId: null }
     case 'UPDATE_GOAL':
       return { ...state, goals: state.goals.map(g => g.id === action.id ? { ...g, ...action.patch } : g) }
+    case 'CONVERT_TASK_TO_GOAL': {
+      const task = state.tasks.find(t => t.id === action.id)
+      if (!task) return state
+      const goal: Goal = { id: task.id, name: task.name, note: task.note, done: task.done, completedAt: task.completedAt }
+      return {
+        ...state,
+        tasks: state.tasks.filter(t => t.id !== action.id),
+        goals: [goal, ...state.goals],
+        editingTaskId: null,
+        editingGoalId: goal.id,
+      }
+    }
+    case 'CONVERT_GOAL_TO_TASK': {
+      const goal = state.goals.find(g => g.id === action.id)
+      if (!goal) return state
+      const task: Task = {
+        id: goal.id, name: goal.name, note: goal.note,
+        done: goal.done, completedAt: goal.completedAt,
+        flagged: false, priority: false, repeat: 'none',
+      }
+      return {
+        ...state,
+        goals: state.goals.filter(g => g.id !== action.id),
+        tasks: [task, ...state.tasks],
+        editingGoalId: null,
+        editingTaskId: task.id,
+      }
+    }
     case 'OPEN_GOAL':
       return { ...state, editingGoalId: action.id }
     case 'CLOSE_GOAL':

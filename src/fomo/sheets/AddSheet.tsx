@@ -1,10 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
 import { Icon } from '../components/Icon'
 import { Chip } from '../components/Chip'
+import { KindTabs, type AddKind } from '../components/KindTabs'
 import { type Repeat, type NewTask, type NewGoal } from '../state/store'
 import { TaskOptions, optionSectionLabel, type TaskOptionsValue } from './TaskOptions'
-
-export type AddKind = 'task' | 'goal'
 
 interface AddSheetProps {
   initialKind?: AddKind
@@ -117,33 +116,8 @@ export function AddSheet({ initialKind = 'task', onClose, onSubmitTask, onSubmit
           overflowY: 'auto',
         }}>
           {/* Task / Goal selector */}
-          <div style={{ display: 'flex', gap: '6px', paddingTop: '18px' }}>
-            {(['task', 'goal'] as AddKind[]).map(k => {
-              const on = kind === k
-              return (
-                <button
-                  key={k}
-                  type="button"
-                  onClick={() => setKind(k)}
-                  aria-pressed={on}
-                  style={{
-                    flex: 1,
-                    height: '36px',
-                    borderRadius: '999px',
-                    border: `1px solid ${on ? 'var(--fomo-chip-active-bd)' : 'var(--fomo-border)'}`,
-                    background: on ? 'var(--fomo-chip-active-bg)' : 'transparent',
-                    color: on ? 'var(--fomo-accent-strong)' : 'var(--fomo-text-secondary)',
-                    fontFamily: 'var(--fomo-font-sans)',
-                    fontSize: '14px',
-                    fontWeight: 500,
-                    cursor: 'pointer',
-                    transition: 'background 120ms ease, color 120ms ease, border-color 120ms ease',
-                  }}
-                >
-                  {k === 'task' ? 'Task' : 'Goal'}
-                </button>
-              )
-            })}
+          <div style={{ paddingTop: '18px' }}>
+            <KindTabs value={kind} onChange={setKind} />
           </div>
 
           {/* Name + confirm button (aligned) */}

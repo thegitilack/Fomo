@@ -3,6 +3,7 @@ import type { Task } from '../state/store'
 import { isRepeating, isDoneToday } from '../state/store'
 import { Checkbox } from '../components/Checkbox'
 import { Icon } from '../components/Icon'
+import { KindTabs } from '../components/KindTabs'
 import { TaskOptions, type TaskOptionsValue } from '../sheets/TaskOptions'
 
 interface TaskDetailProps {
@@ -12,9 +13,10 @@ interface TaskDetailProps {
   onDelete: () => void
   onUpdateNote: (note: string) => void
   onUpdate: (patch: Partial<Task>) => void
+  onConvertToGoal: () => void
 }
 
-export function TaskDetail({ task, onBack, onToggleDone, onDelete, onUpdateNote, onUpdate }: TaskDetailProps) {
+export function TaskDetail({ task, onBack, onToggleDone, onDelete, onUpdateNote, onUpdate, onConvertToGoal }: TaskDetailProps) {
   const [editingNote, setEditingNote] = useState(false)
   const [noteValue, setNoteValue] = useState(task.note ?? '')
   const [editingTitle, setEditingTitle] = useState(false)
@@ -66,6 +68,11 @@ export function TaskDetail({ task, onBack, onToggleDone, onDelete, onUpdateNote,
         <button onClick={onBack} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
           <Icon name="back" size={24} stroke="var(--fomo-text-primary)" />
         </button>
+      </div>
+
+      {/* Task / Goal — switching converts this item */}
+      <div style={{ padding: '14px 26px 0' }}>
+        <KindTabs value="task" onChange={k => { if (k === 'goal') onConvertToGoal() }} />
       </div>
 
       {/* Title + checkbox */}

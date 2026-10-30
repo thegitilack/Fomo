@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { Goal } from '../state/store'
 import { Checkbox } from '../components/Checkbox'
 import { Icon } from '../components/Icon'
+import { KindTabs } from '../components/KindTabs'
 
 interface GoalDetailProps {
   goal: Goal
@@ -9,9 +10,10 @@ interface GoalDetailProps {
   onToggleDone: () => void
   onDelete: () => void
   onUpdate: (patch: Partial<Goal>) => void
+  onConvertToTask: () => void
 }
 
-export function GoalDetail({ goal, onBack, onToggleDone, onDelete, onUpdate }: GoalDetailProps) {
+export function GoalDetail({ goal, onBack, onToggleDone, onDelete, onUpdate, onConvertToTask }: GoalDetailProps) {
   const [editingNote, setEditingNote] = useState(false)
   const [noteValue, setNoteValue] = useState(goal.note ?? '')
   const [editingTitle, setEditingTitle] = useState(false)
@@ -35,6 +37,11 @@ export function GoalDetail({ goal, onBack, onToggleDone, onDelete, onUpdate }: G
         <button onClick={onBack} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
           <Icon name="back" size={24} stroke="var(--fomo-text-primary)" />
         </button>
+      </div>
+
+      {/* Task / Goal — switching converts this item */}
+      <div style={{ padding: '14px 26px 0' }}>
+        <KindTabs value="goal" onChange={k => { if (k === 'task') onConvertToTask() }} />
       </div>
 
       {/* Title + checkbox */}

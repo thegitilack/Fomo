@@ -17,6 +17,8 @@ interface TodayScreenProps {
 
 export function TodayScreen({ eyebrow, tasks, goals, onToggleTask, onOpenTask, onToggleGoal, onOpenGoal }: TodayScreenProps) {
   const [scrolled, setScrolled] = useState(false)
+  const activeTasks = tasks.filter(t => !isDoneToday(t))
+  const completedTasks = tasks.filter(t => isDoneToday(t))
   const empty = tasks.length === 0 && goals.length === 0
 
   return (
@@ -52,11 +54,12 @@ export function TodayScreen({ eyebrow, tasks, goals, onToggleTask, onOpenTask, o
           onScroll={e => setScrolled(e.currentTarget.scrollTop > 4)}
           style={{ flex: 1, minHeight: 0, overflowY: 'auto', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch', padding: '10px 26px 16px' }}
         >
-          {tasks.length > 0 && (
+          {/* Active daily tasks */}
+          {activeTasks.length > 0 && (
             <div>
               <div style={{ marginBottom: '12px' }}><Eyebrow>Daily tasks</Eyebrow></div>
               <TaskCardList>
-                {tasks.map(t => (
+                {activeTasks.map(t => (
                   <TaskRowCard
                     key={t.id}
                     variant="filled"
@@ -64,7 +67,7 @@ export function TodayScreen({ eyebrow, tasks, goals, onToggleTask, onOpenTask, o
                     meta={taskMeta(t)}
                     priority={t.priority}
                     flagged={t.flagged}
-                    done={isDoneToday(t)}
+                    done={false}
                     onToggle={() => onToggleTask(t.id)}
                     onOpen={() => onOpenTask(t.id)}
                   />
@@ -73,8 +76,12 @@ export function TodayScreen({ eyebrow, tasks, goals, onToggleTask, onOpenTask, o
             </div>
           )}
 
+          {/* Goals — above the completed tasks, with a divider from the tasks */}
           {goals.length > 0 && (
-            <div style={{ marginTop: tasks.length > 0 ? '26px' : 0 }}>
+            <div style={{ marginTop: activeTasks.length > 0 ? '22px' : 0 }}>
+              {activeTasks.length > 0 && (
+                <div style={{ borderTop: '1px solid var(--fomo-hairline)', marginBottom: '22px' }} />
+              )}
               <div style={{ marginBottom: '12px' }}><Eyebrow>Goals</Eyebrow></div>
               <TaskCardList>
                 {goals.map(g => (
@@ -86,6 +93,27 @@ export function TodayScreen({ eyebrow, tasks, goals, onToggleTask, onOpenTask, o
                     done={g.done}
                     onToggle={() => onToggleGoal(g.id)}
                     onOpen={() => onOpenGoal(g.id)}
+                  />
+                ))}
+              </TaskCardList>
+            </div>
+          )}
+
+          {/* Completed daily tasks — at the bottom, below goals */}
+          {completedTasks.length > 0 && (
+            <div style={{ marginTop: (activeTasks.length > 0 || goals.length > 0) ? '22px' : 0 }}>
+              <TaskCardList>
+                {completedTasks.map(t => (
+                  <TaskRowCard
+                    key={t.id}
+                    variant="filled"
+                    name={t.name}
+                    meta={taskMeta(t)}
+                    priority={t.priority}
+                    flagged={t.flagged}
+                    done
+                    onToggle={() => onToggleTask(t.id)}
+                    onOpen={() => onOpenTask(t.id)}
                   />
                 ))}
               </TaskCardList>

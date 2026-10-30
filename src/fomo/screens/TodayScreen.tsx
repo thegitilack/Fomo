@@ -17,9 +17,45 @@ interface TodayScreenProps {
 
 export function TodayScreen({ eyebrow, tasks, goals, onToggleTask, onOpenTask, onToggleGoal, onOpenGoal }: TodayScreenProps) {
   const [scrolled, setScrolled] = useState(false)
+
   const activeTasks = tasks.filter(t => !isDoneToday(t))
   const completedTasks = tasks.filter(t => isDoneToday(t))
+  const activeGoals = goals.filter(g => !g.done)
+  const completedGoals = goals.filter(g => g.done)
   const empty = tasks.length === 0 && goals.length === 0
+
+  const taskRow = (t: Task) => (
+    <TaskRowCard
+      key={t.id}
+      variant="filled"
+      name={t.name}
+      meta={taskMeta(t)}
+      priority={t.priority}
+      flagged={t.flagged}
+      done={isDoneToday(t)}
+      onToggle={() => onToggleTask(t.id)}
+      onOpen={() => onOpenTask(t.id)}
+    />
+  )
+  const goalRow = (g: Goal) => (
+    <TaskRowCard
+      key={g.id}
+      variant="filled"
+      name={g.name}
+      meta={g.note || undefined}
+      done={g.done}
+      onToggle={() => onToggleGoal(g.id)}
+      onOpen={() => onOpenGoal(g.id)}
+    />
+  )
+
+  // Sections, in order; a hairline divider separates each from the previous.
+  const sections: { label: string; rows: React.ReactNode }[] = []
+  if (activeTasks.length) sections.push({ label: 'Daily tasks', rows: activeTasks.map(taskRow) })
+  if (activeGoals.length) sections.push({ label: 'Goals', rows: activeGoals.map(goalRow) })
+  if (completedTasks.length || completedGoals.length) {
+    sections.push({ label: 'Completed', rows: [...completedTasks.map(taskRow), ...completedGoals.map(goalRow)] })
+  }
 
   return (
     <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
@@ -54,71 +90,13 @@ export function TodayScreen({ eyebrow, tasks, goals, onToggleTask, onOpenTask, o
           onScroll={e => setScrolled(e.currentTarget.scrollTop > 4)}
           style={{ flex: 1, minHeight: 0, overflowY: 'auto', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch', padding: '10px 26px 16px' }}
         >
-          {/* Active daily tasks */}
-          {activeTasks.length > 0 && (
-            <div>
-              <div style={{ marginBottom: '12px' }}><Eyebrow>Daily tasks</Eyebrow></div>
-              <TaskCardList>
-                {activeTasks.map(t => (
-                  <TaskRowCard
-                    key={t.id}
-                    variant="filled"
-                    name={t.name}
-                    meta={taskMeta(t)}
-                    priority={t.priority}
-                    flagged={t.flagged}
-                    done={false}
-                    onToggle={() => onToggleTask(t.id)}
-                    onOpen={() => onOpenTask(t.id)}
-                  />
-                ))}
-              </TaskCardList>
+          {sections.map((s, i) => (
+            <div key={s.label} style={{ marginTop: i > 0 ? '22px' : 0 }}>
+              {i > 0 && <div style={{ borderTop: '1px solid var(--fomo-hairline)', marginBottom: '22px' }} />}
+              <div style={{ marginBottom: '12px' }}><Eyebrow>{s.label}</Eyebrow></div>
+              <TaskCardList>{s.rows}</TaskCardList>
             </div>
-          )}
-
-          {/* Goals — above the completed tasks, with a divider from the tasks */}
-          {goals.length > 0 && (
-            <div style={{ marginTop: activeTasks.length > 0 ? '22px' : 0 }}>
-              {activeTasks.length > 0 && (
-                <div style={{ borderTop: '1px solid var(--fomo-hairline)', marginBottom: '22px' }} />
-              )}
-              <div style={{ marginBottom: '12px' }}><Eyebrow>Goals</Eyebrow></div>
-              <TaskCardList>
-                {goals.map(g => (
-                  <TaskRowCard
-                    key={g.id}
-                    variant="filled"
-                    name={g.name}
-                    meta={g.note || undefined}
-                    done={g.done}
-                    onToggle={() => onToggleGoal(g.id)}
-                    onOpen={() => onOpenGoal(g.id)}
-                  />
-                ))}
-              </TaskCardList>
-            </div>
-          )}
-
-          {/* Completed daily tasks — at the bottom, below goals */}
-          {completedTasks.length > 0 && (
-            <div style={{ marginTop: (activeTasks.length > 0 || goals.length > 0) ? '22px' : 0 }}>
-              <TaskCardList>
-                {completedTasks.map(t => (
-                  <TaskRowCard
-                    key={t.id}
-                    variant="filled"
-                    name={t.name}
-                    meta={taskMeta(t)}
-                    priority={t.priority}
-                    flagged={t.flagged}
-                    done
-                    onToggle={() => onToggleTask(t.id)}
-                    onOpen={() => onOpenTask(t.id)}
-                  />
-                ))}
-              </TaskCardList>
-            </div>
-          )}
+          ))}
         </div>
       )}
     </div>

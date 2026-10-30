@@ -93,7 +93,8 @@
       "Bash(git commit -q -m 'Today: keep a completed task/goal only on the day it was completed *)",
       "Bash(perl -0pi -e 's/\\(<TaskDetail\\\\s+task=\\\\{DETAIL_TASK\\\\}\\\\s+onBack=\\\\{\\\\\\(\\\\\\) => \\\\{\\\\}\\\\}\\\\s+onToggleDone=\\\\{\\\\\\(\\\\\\) => \\\\{\\\\}\\\\}\\\\s+onDelete=\\\\{\\\\\\(\\\\\\) => \\\\{\\\\}\\\\}\\\\s+onUpdateNote=\\\\{\\\\\\(\\\\\\) => \\\\{\\\\}\\\\}\\\\s+onUpdate=\\\\{\\\\\\(\\\\\\) => \\\\{\\\\}\\\\}\\\\s*\\)\\\\/>/$1onConvertToGoal={\\(\\) => {}}\\\\n      \\\\/>/' src/fomo/Pages.stories.tsx)",
       "Bash(perl -pi -e 's/\\(<TaskDetail task=\\\\{DETAIL_TASK\\\\} onBack=\\\\{\\\\\\(\\\\\\) => \\\\{\\\\}\\\\} onToggleDone=\\\\{\\\\\\(\\\\\\) => \\\\{\\\\}\\\\} onDelete=\\\\{\\\\\\(\\\\\\) => \\\\{\\\\}\\\\} onUpdateNote=\\\\{\\\\\\(\\\\\\) => \\\\{\\\\}\\\\} onUpdate=\\\\{\\\\\\(\\\\\\) => \\\\{\\\\}\\\\}\\) \\\\/>/$1 onConvertToGoal={\\(\\) => {}} \\\\/>/g' src/fomo/Pages.stories.tsx src/fomo/DesignSystem.tsx)",
-      "Bash(git commit -q -m 'Task/Goal conversion in detail; Today reorders goals above completed tasks *)"
+      "Bash(git commit -q -m 'Task/Goal conversion in detail; Today reorders goals above completed tasks *)",
+      "Bash(git commit -q -m 'Today: a Completed section holding completed tasks and goals *)"
     ]
   }
 }
